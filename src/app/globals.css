@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Derived from Glochammy logo: deep neutral base + warm bronze accent */
+  --background: #ffffff;
+  --foreground: #14120f;
+  --ink: #14120f;
+  --muted: #5c5752;
+  --subtle: #f6f5f3;
+  --line: #e8e6e3;
+  --accent: #8b6f4a;
+  --cream: #faf9f7;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* Leaflet custom marker wrapper (divIcon) */
+.glochammy-leaflet-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
