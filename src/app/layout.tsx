@@ -1,3 +1,4 @@
+import { HydrationChallengePopup } from "@/components/layout/hydration-challenge-popup";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { CartProvider } from "@/context/cart-context";
@@ -56,6 +57,7 @@ export default function RootLayout({
             <main className="min-w-0 flex-1 overflow-x-clip">{children}</main>
             <SiteFooter />
           </div>
+          <HydrationChallengePopup />
         </CartProvider>
       </body>
     </html>

@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { X } from "lucide-react";
+import { ChevronLeft, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
@@ -14,8 +14,8 @@ export const ABOUT_YOUR_SKIN_PATHS = {
 
 const LEFT_LINKS: { label: string; href: string }[] = [
   { label: "Online Consultation", href: ABOUT_YOUR_SKIN_PATHS.consultation },
-  { label: "Skin diagnosis", href: ABOUT_YOUR_SKIN_PATHS.diagnosis },
-  { label: "Hydration challenge", href: ABOUT_YOUR_SKIN_PATHS.hydration },
+  { label: "Skin Diagnosis", href: ABOUT_YOUR_SKIN_PATHS.diagnosis },
+  { label: "Hydration Challenge", href: ABOUT_YOUR_SKIN_PATHS.hydration },
 ];
 
 const FEATURED: {
@@ -32,14 +32,14 @@ const FEATURED: {
     imageAlt: "Calm facial treatment and skincare consultation",
   },
   {
-    title: "Skin diagnosis",
+    title: "Skin Diagnosis",
     href: ABOUT_YOUR_SKIN_PATHS.diagnosis,
     image:
       "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&w=1200&q=88",
     imageAlt: "Close-up portrait focused on natural skin texture",
   },
   {
-    title: "Hydration challenge",
+    title: "Hydration Challenge",
     href: ABOUT_YOUR_SKIN_PATHS.hydration,
     image:
       "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&w=1200&q=88",
@@ -50,11 +50,14 @@ const FEATURED: {
 type AboutYourSkinMegaMenuProps = {
   open: boolean;
   onClose: () => void;
+  /** Mobile: return user to the main hamburger menu */
+  onBackToMenu?: () => void;
 };
 
 export function AboutYourSkinMegaMenu({
   open,
   onClose,
+  onBackToMenu,
 }: AboutYourSkinMegaMenuProps) {
   const reduce = useReducedMotion();
 
@@ -95,7 +98,91 @@ export function AboutYourSkinMegaMenu({
             exit={reduce ? undefined : { opacity: 0, y: -10 }}
             transition={{ duration: 0.22, ease: panelEase }}
           >
-            <div className="relative mx-auto min-w-0 max-w-content px-4 py-10 pb-safe sm:px-8 sm:py-12 lg:py-14 lg:pr-16">
+            {/* Mobile: full-screen stacked tiles (luxury sub-menu pattern) */}
+            <div className="flex min-h-[100dvh] flex-col bg-white lg:hidden">
+              <div className="flex shrink-0 items-center justify-between gap-4 px-4 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))]">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center text-ink transition-opacity hover:opacity-60"
+                  aria-label="Close About your skin menu"
+                >
+                  <X className="h-5 w-5" strokeWidth={1.25} />
+                </button>
+                <Link
+                  href="/shop"
+                  onClick={onClose}
+                  className="flex min-h-11 min-w-0 items-center gap-2 text-muted transition-opacity hover:opacity-70"
+                >
+                  <Search className="h-[18px] w-[18px] shrink-0" strokeWidth={1.25} />
+                  <span className="text-sm font-normal">Search</span>
+                </Link>
+              </div>
+              <div className="h-px w-full bg-accent/35" aria-hidden />
+
+              <div className="shrink-0 px-4 pb-2 pt-1">
+                {onBackToMenu ? (
+                  <button
+                    type="button"
+                    onClick={onBackToMenu}
+                    className="flex w-full max-w-full min-w-0 items-center gap-1 py-3 text-left transition-opacity hover:opacity-70"
+                    aria-label="Back to main menu"
+                  >
+                    <ChevronLeft
+                      className="h-5 w-5 shrink-0 text-ink"
+                      strokeWidth={1.25}
+                      aria-hidden
+                    />
+                    <span className="min-w-0 text-2xs font-medium uppercase tracking-[0.18em]">
+                      <span className="text-muted">Menu</span>
+                      <span className="text-muted"> / </span>
+                      <span className="text-ink">About your skin</span>
+                    </span>
+                  </button>
+                ) : (
+                  <p className="py-3 text-2xs font-medium uppercase tracking-[0.18em] text-ink">
+                    <span className="text-muted">Menu</span>
+                    <span className="text-muted"> / </span>
+                    <span>About your skin</span>
+                  </p>
+                )}
+              </div>
+
+              <nav
+                aria-label="About your skin"
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-safe"
+              >
+                <ul className="flex flex-col gap-2 px-3 pb-6">
+                  {FEATURED.map((item) => (
+                    <li key={item.href + item.title}>
+                      <Link
+                        href={item.href}
+                        onClick={onClose}
+                        className="group relative block aspect-[5/3] min-h-[148px] w-full overflow-hidden bg-cream outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+                      >
+                        <Image
+                          src={item.image}
+                          alt={item.imageAlt}
+                          fill
+                          className="object-cover transition-transform duration-500 ease-out group-active:scale-[1.02]"
+                          sizes="100vw"
+                        />
+                        <div
+                          className="absolute inset-0 bg-gradient-to-t from-ink/55 via-ink/30 to-ink/20"
+                          aria-hidden
+                        />
+                        <span className="absolute inset-0 flex items-center justify-center px-6 text-center font-sans text-lg font-medium leading-snug tracking-tight text-white sm:text-xl">
+                          {item.title}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </div>
+
+            {/* Desktop mega menu */}
+            <div className="relative mx-auto hidden min-w-0 max-w-content px-4 py-10 pb-safe sm:px-8 sm:py-12 lg:block lg:py-14 lg:pr-16">
               <button
                 type="button"
                 onClick={onClose}

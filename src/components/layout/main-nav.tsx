@@ -210,6 +210,10 @@ export function MainNav() {
       <AboutYourSkinMegaMenu
         open={skinOpen}
         onClose={() => setSkinOpen(false)}
+        onBackToMenu={() => {
+          setSkinOpen(false);
+          setOpen(true);
+        }}
       />
       <ShopMegaMenu open={shopOpen} onClose={() => setShopOpen(false)} />
       <UniverseMegaMenu

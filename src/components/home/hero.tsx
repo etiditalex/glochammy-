@@ -1,4 +1,5 @@
 import { HeroTagline } from "@/components/home/hero-tagline";
+import { ButtonLink } from "@/components/ui/button-link";
 import { BRAND } from "@/lib/constants";
 
 const id = BRAND.heroYoutubeVideoId;
@@ -27,6 +28,18 @@ export function Hero() {
               className="pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full -translate-x-1/2 -translate-y-1/2 scale-[1.02] border-0"
               loading="eager"
             />
+          </div>
+        </div>
+
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-6 pb-10 pt-8 sm:pb-12 sm:pt-10">
+          <div className="pointer-events-auto">
+            <ButtonLink
+              href="/shop"
+              variant="secondary"
+              className="border-white bg-white/10 text-white backdrop-blur-[2px] hover:border-white hover:bg-white hover:text-ink"
+            >
+              Discover
+            </ButtonLink>
           </div>
         </div>
       </section>

@@ -39,19 +39,8 @@ export default function OnlineConsultationPage() {
     <div className="bg-white">
       <section
         aria-label="Online consultation"
-        className="relative min-h-[280px] w-full border-b border-line sm:min-h-[min(70vh,820px)]"
+        className="border-b border-line bg-white px-4 py-20 text-center sm:px-8 sm:py-28 lg:py-32"
       >
-        <Image
-          src="https://res.cloudinary.com/dyfnobo9r/image/upload/v1775116333/18448_vvk6gc.jpg"
-          alt=""
-          fill
-          className="object-cover"
-          priority
-          sizes="100vw"
-        />
-      </section>
-
-      <section className="border-b border-line bg-white px-4 py-16 text-center sm:px-8 sm:py-20 lg:py-24">
         <div className="mx-auto max-w-3xl">
           <FadeIn>
             <h1 className="font-sans text-3xl font-light leading-snug tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
