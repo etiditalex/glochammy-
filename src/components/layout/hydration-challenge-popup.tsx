@@ -13,15 +13,15 @@ import { useCallback, useEffect, useId, useState } from "react";
 
 const MOSAIC = {
   large: {
-    src: "https://images.unsplash.com/photo-1570194065650-d99fb4b38b15?auto=format&w=1200&q=85",
+    src: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&w=1200&q=85",
     alt: "Calm spa moment with robe and skincare on a bed tray",
   },
   topRight: {
-    src: "https://images.unsplash.com/photo-1544145945-f90425340c7e?auto=format&w=800&q=85",
+    src: "https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&w=800&q=85",
     alt: "Glass bottles of water with citrus and mint",
   },
   bottomRight: {
-    src: "https://images.unsplash.com/photo-1516534775068-ba3db7456fae?auto=format&w=800&q=85",
+    src: "https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?auto=format&w=800&q=85",
     alt: "Notebook, pen, and herbal tea on a white table",
   },
 } as const;
@@ -108,33 +108,36 @@ export function HydrationChallengePopup() {
                 <X className="h-4 w-4" strokeWidth={1.5} aria-hidden />
               </button>
 
-              <div className="grid h-[min(38vh,320px)] grid-cols-2 grid-rows-2 gap-1 bg-white p-1 sm:h-[min(42vh,380px)]">
-                <div className="relative col-span-1 row-span-2 min-h-0 overflow-hidden bg-cream">
+              <div
+                className="grid h-[min(38vh,320px)] grid-cols-2 gap-1 bg-white p-1 sm:h-[min(42vh,380px)]"
+                style={{ gridTemplateRows: "repeat(2, minmax(0, 1fr))" }}
+              >
+                <div className="relative col-span-1 row-span-2 h-full min-h-0 overflow-hidden bg-cream">
                   <Image
                     src={MOSAIC.large.src}
                     alt={MOSAIC.large.alt}
                     fill
                     className="object-cover"
-                    sizes="(min-width: 640px) 280px, 50vw"
+                    sizes="(min-width: 512px) 256px, 45vw"
                     priority
                   />
                 </div>
-                <div className="relative min-h-0 overflow-hidden bg-cream">
+                <div className="relative h-full min-h-0 overflow-hidden bg-cream">
                   <Image
                     src={MOSAIC.topRight.src}
                     alt={MOSAIC.topRight.alt}
                     fill
                     className="object-cover"
-                    sizes="(min-width: 640px) 280px, 50vw"
+                    sizes="(min-width: 512px) 256px, 45vw"
                   />
                 </div>
-                <div className="relative min-h-0 overflow-hidden bg-cream">
+                <div className="relative h-full min-h-0 overflow-hidden bg-cream">
                   <Image
                     src={MOSAIC.bottomRight.src}
                     alt={MOSAIC.bottomRight.alt}
                     fill
                     className="object-cover"
-                    sizes="(min-width: 640px) 280px, 50vw"
+                    sizes="(min-width: 512px) 256px, 45vw"
                   />
                 </div>
               </div>
