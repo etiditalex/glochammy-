@@ -23,9 +23,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProductBySlug(params.slug);
   if (!product) return { title: "Product" };
+  const desc =
+    product.longDescription.trim() && product.longDescription !== product.description
+      ? `${product.description} ${product.longDescription}`.slice(0, 160)
+      : product.description;
   return {
     title: product.name,
-    description: product.description,
+    description: desc,
     openGraph: {
       title: product.name,
       description: product.description,
@@ -39,6 +43,11 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   const related = await getRelatedProducts(params.slug, 3);
+
+  const longTrim = product.longDescription.trim();
+  const shortTrim = product.description.trim();
+  const hasDistinctLong =
+    longTrim.length > 0 && longTrim.toLowerCase() !== shortTrim.toLowerCase();
 
   return (
     <div className="bg-white">
@@ -67,16 +76,35 @@ export default async function ProductPage({ params }: Props) {
               <h1 className="mt-3 font-display text-4xl text-ink sm:text-5xl">
                 {product.name}
               </h1>
-              <p className="mt-6 text-base leading-relaxed text-muted">
+              <p className="mt-6 max-w-prose text-base leading-relaxed text-ink">
                 {product.description}
               </p>
-              <p className="mt-8 text-sm leading-relaxed text-muted">
-                {product.longDescription}
-              </p>
+              {hasDistinctLong ? (
+                <section className="mt-10 border-t border-line pt-10" aria-labelledby="product-details-heading">
+                  <h2
+                    id="product-details-heading"
+                    className="font-display text-xl text-ink sm:text-2xl"
+                  >
+                    About this product
+                  </h2>
+                  <p className="mt-4 max-w-prose whitespace-pre-line text-sm leading-relaxed text-muted">
+                    {longTrim}
+                  </p>
+                </section>
+              ) : null}
             </FadeIn>
             <div className="mt-10">
               <AddToCartPanel product={product} />
             </div>
+            <p className="mt-6 text-2xs text-muted">
+              <Link href="/cart" className="underline underline-offset-4 hover:text-ink">
+                View shopping bag
+              </Link>
+              {" · "}
+              <Link href="/shop" className="underline underline-offset-4 hover:text-ink">
+                Continue shopping
+              </Link>
+            </p>
           </div>
         </div>
       </div>
