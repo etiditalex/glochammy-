@@ -1,6 +1,7 @@
 import { StorefrontChrome } from "@/components/layout/storefront-chrome";
 import { CartProvider } from "@/context/cart-context";
 import { BRAND } from "@/lib/constants";
+import { getSiteUrl } from "@/lib/env/site-url";
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import "./globals.css";
@@ -27,17 +28,50 @@ export const viewport: Viewport = {
   themeColor: "#faf9f7",
 };
 
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://glochammybeauty.example.com"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: `${BRAND.shortName} · Beauty & Salon`,
     template: `%s · ${BRAND.shortName}`,
   },
   description: BRAND.tagline,
+  applicationName: BRAND.shortName,
+  icons: {
+    icon: [
+      { url: BRAND.iconSrc, sizes: "512x512", type: "image/png" },
+      { url: BRAND.iconSrc, sizes: "192x192", type: "image/png" },
+      { url: BRAND.iconSrc, sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: BRAND.iconSrc, sizes: "180x180", type: "image/png" }],
+    shortcut: BRAND.iconSrc,
+  },
   openGraph: {
     title: BRAND.name,
     description: BRAND.tagline,
     type: "website",
+    locale: "en_KE",
+    siteName: BRAND.shortName,
+    url: siteUrl,
+    images: [
+      {
+        url: BRAND.ogImageSrc,
+        width: 1200,
+        height: 630,
+        alt: BRAND.name,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: BRAND.name,
+    description: BRAND.tagline,
+    images: [BRAND.ogImageSrc],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
