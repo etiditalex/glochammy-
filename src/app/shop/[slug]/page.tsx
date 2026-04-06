@@ -7,6 +7,8 @@ import {
   getProductSlugs,
   getRelatedProducts,
 } from "@/lib/products/catalog";
+import { getProductReviewStats, getProductReviewsList, isUuidProductId } from "@/lib/products/reviews";
+import { ProductReviewsPanel } from "@/components/product/product-reviews-panel";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -48,6 +50,21 @@ export default async function ProductPage({ params }: Props) {
   const shortTrim = product.description.trim();
   const hasDistinctLong =
     longTrim.length > 0 && longTrim.toLowerCase() !== shortTrim.toLowerCase();
+
+  const reviewsEnabled = isUuidProductId(product.id);
+  const [initialReviews, initialReviewStats] = reviewsEnabled
+    ? await Promise.all([
+        getProductReviewsList(product.id),
+        getProductReviewStats(product.id),
+      ])
+    : [
+        [],
+        {
+          averageRating: null as number | null,
+          reviewCount: 0,
+          likeCount: 0,
+        },
+      ];
 
   return (
     <div className="bg-white">
@@ -107,6 +124,16 @@ export default async function ProductPage({ params }: Props) {
             </p>
           </div>
         </div>
+
+        {reviewsEnabled ? (
+          <ProductReviewsPanel
+            productId={product.id}
+            productSlug={product.slug}
+            productName={product.name}
+            initialReviews={initialReviews}
+            initialStats={initialReviewStats}
+          />
+        ) : null}
       </div>
 
       {related.length > 0 ? (

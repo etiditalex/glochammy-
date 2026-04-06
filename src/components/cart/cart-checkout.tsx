@@ -79,8 +79,7 @@ export function CartCheckout({ catalog, checkoutSession }: Props) {
     <div className="space-y-4">
       <h3 className="text-sm font-medium uppercase tracking-nav text-muted">Checkout</h3>
       <p className="text-2xs leading-relaxed text-muted">
-        Orders are saved for your team in Admin → Order list. Use the same email as your account
-        to link history on the client profile.
+        Enter your details below. We will email you about your order and any updates.
       </p>
 
       <div>

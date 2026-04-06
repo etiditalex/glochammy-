@@ -5,7 +5,7 @@ import {
 } from "@/lib/data/products";
 import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createPublicSupabaseServerClient } from "@/lib/supabase/server-public";
 import type { Product } from "@/lib/types/commerce";
 
 export { isSupabaseConfigured } from "@/lib/supabase/env";
@@ -42,7 +42,7 @@ export async function getShopProducts(): Promise<Product[]> {
   if (!isSupabaseConfigured()) return staticProducts;
 
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createPublicSupabaseServerClient();
     const { data, error } = await supabase
       .from("products")
       .select("*")
@@ -65,7 +65,7 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
   if (!isSupabaseConfigured()) return staticGetBySlug(slug);
 
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createPublicSupabaseServerClient();
     const { data, error } = await supabase
       .from("products")
       .select("*")
@@ -88,7 +88,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
   if (!isSupabaseConfigured()) return staticFeatured();
 
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createPublicSupabaseServerClient();
     const { data, error } = await supabase
       .from("products")
       .select("*")

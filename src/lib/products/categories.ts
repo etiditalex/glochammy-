@@ -1,5 +1,5 @@
 import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createPublicSupabaseServerClient } from "@/lib/supabase/server-public";
 
 export type ProductCategoryOption = {
   slug: string;
@@ -19,7 +19,7 @@ export async function getProductCategories(): Promise<ProductCategoryOption[]> {
   if (!isSupabaseConfigured()) return DEFAULT_CATEGORIES;
 
   try {
-    const supabase = createServerSupabaseClient();
+    const supabase = createPublicSupabaseServerClient();
     const { data, error } = await supabase
       .from("product_categories")
       .select("slug, name, sort_order")
