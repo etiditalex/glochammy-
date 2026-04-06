@@ -1,6 +1,9 @@
 import { CartView } from "@/components/cart/cart-view";
 import { FadeIn } from "@/components/motion/fade-in";
-import { isMpesaConfigured } from "@/lib/mpesa/config";
+import {
+  isMpesaAutoCompleteConfigured,
+  isMpesaStkAvailable,
+} from "@/lib/mpesa/config";
 import { getShopProducts, isSupabaseConfigured } from "@/lib/products/catalog";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
@@ -56,7 +59,8 @@ export default async function CartPage() {
         <CartView
           catalog={catalog}
           checkoutSession={checkoutSession}
-          mpesaConfigured={isMpesaConfigured()}
+          mpesaConfigured={isMpesaStkAvailable()}
+          mpesaAutoComplete={isMpesaAutoCompleteConfigured()}
         />
       </div>
     </div>

@@ -16,9 +16,16 @@ type Props = {
   checkoutSession?: { email: string; name: string } | null;
   currency: string;
   mpesaConfigured: boolean;
+  mpesaAutoComplete: boolean;
 };
 
-export function CartCheckout({ catalog, checkoutSession, currency, mpesaConfigured }: Props) {
+export function CartCheckout({
+  catalog,
+  checkoutSession,
+  currency,
+  mpesaConfigured,
+  mpesaAutoComplete,
+}: Props) {
   const { lines, clear } = useCart();
   const [email, setEmail] = useState(checkoutSession?.email ?? "");
   const [name, setName] = useState(checkoutSession?.name ?? "");
@@ -191,12 +198,18 @@ export function CartCheckout({ catalog, checkoutSession, currency, mpesaConfigur
           order is already in our system and will show as paid when M-Pesa confirms.
         </p>
         {mpesaPhase === "waiting" ? (
-          <p className="text-2xs text-muted">Waiting for M-Pesa confirmation…</p>
+          <p className="text-2xs text-muted">
+            Waiting for M-Pesa confirmation…{" "}
+            {!mpesaAutoComplete
+              ? "Without the service role key, this screen may not flip to success even if you paid—check Admin for the order."
+              : null}
+          </p>
         ) : (
           <p className="text-2xs text-muted">
             This is taking longer than usual. If you already entered your PIN, payment can still
             complete in the background. Keep this page open or check your email; the admin dashboard
-            will update when Safaricom confirms.
+            will update when Safaricom confirms
+            {mpesaAutoComplete ? "" : " (after you add SUPABASE_SERVICE_ROLE_KEY for auto-updates)"}.
           </p>
         )}
       </div>
@@ -212,6 +225,15 @@ export function CartCheckout({ catalog, checkoutSession, currency, mpesaConfigur
           : "Enter your details below. We will email you about your order and any updates."}{" "}
         Product ratings and reviews are on each item&apos;s page in the shop—not on this screen.
       </p>
+      {showMpesa && !mpesaAutoComplete ? (
+        <p className="rounded border border-amber-200/80 bg-amber-50/90 p-2 text-2xs leading-relaxed text-amber-950">
+          Trial / dev: STK push is enabled. Add{" "}
+          <span className="font-mono text-[10px]">SUPABASE_SERVICE_ROLE_KEY</span> on the server
+          so the payment callback can set orders to <span className="font-medium">paid</span>{" "}
+          automatically. Without it, new orders stay <span className="font-medium">pending</span>{" "}
+          until you update them in Admin.
+        </p>
+      ) : null}
 
       <div>
         <label htmlFor="co-name" className="text-2xs uppercase tracking-nav text-muted">

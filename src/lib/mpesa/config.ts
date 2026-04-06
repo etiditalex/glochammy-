@@ -1,4 +1,7 @@
-import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/supabase/env";
+import {
+  getSupabaseServiceRoleKey,
+  isSupabaseConfigured,
+} from "@/lib/supabase/env";
 
 export function getMpesaConsumerKey(): string | undefined {
   return process.env.MPESA_CONSUMER_KEY?.trim();
@@ -43,18 +46,30 @@ export function getMpesaBaseUrl(): string {
 }
 
 /**
- * True when Daraja credentials, public callback URL, and Supabase service role are set.
- * The service role is required so the STK callback can mark orders paid safely (RLS blocks anon updates).
+ * True when Daraja + callback URL are set and Supabase is wired for checkout.
+ * Use this to show **Pay with M-Pesa** and to run STK sandbox/live trials without requiring
+ * the service role (orders still create; auto “paid” from callback needs the role).
  */
-export function isMpesaConfigured(): boolean {
+export function isMpesaStkAvailable(): boolean {
   return Boolean(
-    getMpesaConsumerKey() &&
+    isSupabaseConfigured() &&
+      getMpesaConsumerKey() &&
       getMpesaConsumerSecret() &&
       getMpesaShortcode() &&
       getMpesaPasskey() &&
       getMpesaPartyB() &&
-      getMpesaCallbackUrl() &&
-      getSupabaseUrl() &&
-      getSupabaseServiceRoleKey(),
+      getMpesaCallbackUrl(),
   );
+}
+
+/** Service role lets `/api/mpesa/stk-callback` mark orders paid (RLS blocks anon updates). */
+export function isMpesaAutoCompleteConfigured(): boolean {
+  return Boolean(getSupabaseServiceRoleKey());
+}
+
+/**
+ * Full automatic flow: STK plus callback can update order status without manual admin steps.
+ */
+export function isMpesaConfigured(): boolean {
+  return isMpesaStkAvailable() && isMpesaAutoCompleteConfigured();
 }

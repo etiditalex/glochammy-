@@ -1,5 +1,5 @@
 import { initiateStkPush } from "@/lib/mpesa/daraja";
-import { isMpesaConfigured } from "@/lib/mpesa/config";
+import { isMpesaStkAvailable } from "@/lib/mpesa/config";
 import { normalizeKenyaMsisdnForStk } from "@/lib/mpesa/phone";
 
 export type StkFlowResult =
@@ -19,11 +19,11 @@ export async function initiateMpesaStkPush(input: {
   amountKes: number;
   orderId: string;
 }): Promise<StkFlowResult> {
-  if (!isMpesaConfigured()) {
+  if (!isMpesaStkAvailable()) {
     return {
       ok: false,
       error:
-        "M-Pesa is not configured. Set MPESA_* variables and SUPABASE_SERVICE_ROLE_KEY on the server.",
+        "M-Pesa STK is not configured. Set MPESA_* and MPESA_CALLBACK_URL, and Supabase URL/anon key.",
     };
   }
 

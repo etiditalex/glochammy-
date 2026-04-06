@@ -18,9 +18,16 @@ type CartViewProps = {
   catalog?: Product[];
   checkoutSession?: { email: string; name: string } | null;
   mpesaConfigured?: boolean;
+  /** When false, STK works but webhook cannot mark orders paid until SUPABASE_SERVICE_ROLE_KEY is set. */
+  mpesaAutoComplete?: boolean;
 };
 
-export function CartView({ catalog, checkoutSession, mpesaConfigured }: CartViewProps) {
+export function CartView({
+  catalog,
+  checkoutSession,
+  mpesaConfigured,
+  mpesaAutoComplete,
+}: CartViewProps) {
   const { lines, setQuantity, clear } = useCart();
   const list = catalog ?? staticCatalog;
 
@@ -163,6 +170,7 @@ export function CartView({ catalog, checkoutSession, mpesaConfigured }: CartView
           checkoutSession={checkoutSession}
           currency={currency}
           mpesaConfigured={mpesaConfigured ?? false}
+          mpesaAutoComplete={mpesaAutoComplete ?? false}
         />
 
         <div className="mt-6 space-y-3">
