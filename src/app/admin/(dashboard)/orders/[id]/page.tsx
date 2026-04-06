@@ -67,6 +67,20 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           <p className="mt-2 font-display text-2xl text-ink">
             {formatMoney(order.total_cents as number, order.currency as string)}
           </p>
+          {order.mpesa_receipt_number ? (
+            <p className="mt-3 text-2xs text-muted">
+              M-Pesa receipt:{" "}
+              <span className="font-mono text-ink">{order.mpesa_receipt_number as string}</span>
+            </p>
+          ) : null}
+          {order.mpesa_checkout_request_id ? (
+            <p className="mt-1 text-2xs text-muted">
+              STK checkout ID:{" "}
+              <span className="font-mono text-[10px] text-ink">
+                {(order.mpesa_checkout_request_id as string).slice(0, 16)}…
+              </span>
+            </p>
+          ) : null}
         </div>
       </div>
 

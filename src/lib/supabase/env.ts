@@ -21,6 +21,12 @@ export function getSupabaseAnonKey(): string | undefined {
   return v || undefined;
 }
 
+/** Server-only: used for trusted webhooks (e.g. M-Pesa callback) that must update orders without user JWT. */
+export function getSupabaseServiceRoleKey(): string | undefined {
+  const v = process.env["SUPABASE_SERVICE_ROLE_KEY"]?.trim();
+  return v || undefined;
+}
+
 export function isSupabaseConfigured(): boolean {
   return Boolean(getSupabaseUrl() && getSupabaseAnonKey());
 }

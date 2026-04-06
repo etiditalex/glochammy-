@@ -17,9 +17,10 @@ type CartViewProps = {
   /** When set (e.g. from Supabase-backed shop), resolves line items; otherwise static demo catalog. */
   catalog?: Product[];
   checkoutSession?: { email: string; name: string } | null;
+  mpesaConfigured?: boolean;
 };
 
-export function CartView({ catalog, checkoutSession }: CartViewProps) {
+export function CartView({ catalog, checkoutSession, mpesaConfigured }: CartViewProps) {
   const { lines, setQuantity, clear } = useCart();
   const list = catalog ?? staticCatalog;
 
@@ -157,7 +158,12 @@ export function CartView({ catalog, checkoutSession }: CartViewProps) {
             <span>{formatMoney(subtotalCents, currency)}</span>
           </div>
         </div>
-        <CartCheckout catalog={list} checkoutSession={checkoutSession} />
+        <CartCheckout
+          catalog={list}
+          checkoutSession={checkoutSession}
+          currency={currency}
+          mpesaConfigured={mpesaConfigured ?? false}
+        />
 
         <div className="mt-6 space-y-3">
           <ButtonPush
