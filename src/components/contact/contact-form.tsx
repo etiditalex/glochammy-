@@ -1,5 +1,6 @@
 "use client";
 
+import { submitInquiryAction } from "@/app/actions/inquiry";
 import { ButtonPush } from "@/components/ui/button-push";
 import { type FormEvent, useState } from "react";
 
@@ -52,6 +53,8 @@ export function ContactForm() {
   const [values, setValues] = useState<ContactValues>(initial);
   const [errors, setErrors] = useState<ContactErrors>({});
   const [sent, setSent] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   function update<K extends keyof ContactValues>(
     key: K,
@@ -61,11 +64,24 @@ export function ContactForm() {
     setErrors((e) => ({ ...e, [key]: undefined }));
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const next = validate(values);
     setErrors(next);
+    setSubmitError(null);
     if (Object.keys(next).length > 0) return;
+    setPending(true);
+    const result = await submitInquiryAction({
+      name: values.name,
+      email: values.email,
+      subject: values.subject,
+      message: values.message,
+    });
+    setPending(false);
+    if (!result.ok) {
+      setSubmitError(result.error);
+      return;
+    }
     setSent(true);
   }
 
@@ -170,12 +186,19 @@ export function ContactForm() {
         ) : null}
       </div>
 
+      {submitError ? (
+        <p className="mt-2 text-sm text-red-700" role="alert">
+          {submitError}
+        </p>
+      ) : null}
+
       <ButtonPush
         type="submit"
         variant="secondary"
+        disabled={pending}
         className="mt-2 w-full !border-accent text-ink hover:bg-ink hover:text-white sm:w-auto"
       >
-        Send message
+        {pending ? "Sending…" : "Send message"}
       </ButtonPush>
     </form>
   );

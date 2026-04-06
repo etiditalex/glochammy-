@@ -4,21 +4,24 @@ import { AddToCartPanel } from "@/components/product/add-to-cart-panel";
 import { ProductGallery } from "@/components/product/product-gallery";
 import {
   getProductBySlug,
+  getProductSlugs,
   getRelatedProducts,
-  products,
-} from "@/lib/data/products";
+} from "@/lib/products/catalog";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+export const revalidate = 60;
+
 type Props = { params: { slug: string } };
 
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  const slugs = await getProductSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
-export function generateMetadata({ params }: Props): Metadata {
-  const product = getProductBySlug(params.slug);
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const product = await getProductBySlug(params.slug);
   if (!product) return { title: "Product" };
   return {
     title: product.name,
@@ -31,11 +34,11 @@ export function generateMetadata({ params }: Props): Metadata {
   };
 }
 
-export default function ProductPage({ params }: Props) {
-  const product = getProductBySlug(params.slug);
+export default async function ProductPage({ params }: Props) {
+  const product = await getProductBySlug(params.slug);
   if (!product) notFound();
 
-  const related = getRelatedProducts(params.slug, 3);
+  const related = await getRelatedProducts(params.slug, 3);
 
   return (
     <div className="bg-white">

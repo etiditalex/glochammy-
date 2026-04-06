@@ -1,5 +1,6 @@
 "use client";
 
+import { registerCustomerAction } from "@/app/actions/auth";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { type FormEvent, useId, useState } from "react";
@@ -56,17 +57,34 @@ export function RegisterForm() {
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [done, setDone] = useState(false);
+  const [doneMessage, setDoneMessage] = useState("");
+  const [pending, setPending] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     setValues((s) => ({ ...s, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined }));
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const next = validate(values);
     setErrors(next);
+    setServerError(null);
     if (Object.keys(next).length > 0) return;
+    setPending(true);
+    const result = await registerCustomerAction({
+      email: values.email.trim(),
+      password: values.password,
+      firstName: values.firstName.trim(),
+      lastName: values.lastName.trim(),
+    });
+    setPending(false);
+    if (!result.ok) {
+      setServerError(result.error);
+      return;
+    }
+    setDoneMessage(result.message);
     setDone(true);
   }
 
@@ -74,8 +92,7 @@ export function RegisterForm() {
     <>
       {done ? (
         <p className="font-sans text-sm leading-relaxed text-ink" role="status">
-          Thanks—registration is a front-end preview only for now. We will hook
-          this form to your database next.
+          {doneMessage}
         </p>
       ) : (
         <form onSubmit={onSubmit} className="space-y-5" noValidate>
@@ -203,11 +220,18 @@ export function RegisterForm() {
             ) : null}
           </div>
 
+          {serverError ? (
+            <p className="font-sans text-sm text-red-700" role="alert">
+              {serverError}
+            </p>
+          ) : null}
+
           <button
             type="submit"
-            className="mt-2 w-full border border-accent bg-transparent px-6 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.22em] text-ink transition-opacity hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:text-sm"
+            disabled={pending}
+            className="mt-2 w-full border border-accent bg-transparent px-6 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.22em] text-ink transition-opacity hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink enabled:cursor-pointer enabled:hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
           >
-            Create an account
+            {pending ? "Creating…" : "Create an account"}
           </button>
         </form>
       )}

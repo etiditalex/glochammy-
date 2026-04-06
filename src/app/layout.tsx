@@ -1,6 +1,4 @@
-import { HydrationChallengePopup } from "@/components/layout/hydration-challenge-popup";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
+import { StorefrontChrome } from "@/components/layout/storefront-chrome";
 import { CartProvider } from "@/context/cart-context";
 import { BRAND } from "@/lib/constants";
 import type { Metadata, Viewport } from "next";
@@ -52,12 +50,7 @@ export default function RootLayout({
     <html lang="en" className={`${sans.variable} ${display.variable}`}>
       <body className="min-h-screen min-w-0 bg-background font-sans text-foreground antialiased">
         <CartProvider>
-          <div className="flex min-h-screen min-w-0 flex-col">
-            <SiteHeader />
-            <main className="min-w-0 flex-1 overflow-x-clip">{children}</main>
-            <SiteFooter />
-          </div>
-          <HydrationChallengePopup />
+          <StorefrontChrome>{children}</StorefrontChrome>
         </CartProvider>
       </body>
     </html>

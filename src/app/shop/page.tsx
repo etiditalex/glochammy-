@@ -1,8 +1,10 @@
 import { FadeIn } from "@/components/motion/fade-in";
 import { ShopFilters } from "@/components/shop/shop-filters";
-import { products } from "@/lib/data/products";
-import type { ProductCategory } from "@/lib/types/commerce";
+import { getProductCategories } from "@/lib/products/categories";
+import { getShopProducts } from "@/lib/products/catalog";
 import type { Metadata } from "next";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Shop",
@@ -11,25 +13,24 @@ export const metadata: Metadata = {
 
 function parseCategory(
   raw: string | string[] | undefined,
-): ProductCategory | "all" {
+  validSlugs: string[],
+): string {
   const s = Array.isArray(raw) ? raw[0] : raw;
-  if (
-    s === "skincare" ||
-    s === "hair" ||
-    s === "body" ||
-    s === "fragrance"
-  ) {
-    return s;
-  }
+  if (s && validSlugs.includes(s)) return s;
   return "all";
 }
 
-export default function ShopPage({
+export default async function ShopPage({
   searchParams,
 }: {
   searchParams: { category?: string | string[]; featured?: string | string[] };
 }) {
-  const initialCategory = parseCategory(searchParams.category);
+  const [products, categoryRows] = await Promise.all([
+    getShopProducts(),
+    getProductCategories(),
+  ]);
+  const validSlugs = categoryRows.map((c) => c.slug);
+  const initialCategory = parseCategory(searchParams.category, validSlugs);
   const featuredRaw = searchParams.featured;
   const featuredStr = Array.isArray(featuredRaw) ? featuredRaw[0] : featuredRaw;
   const initialFeaturedOnly =
@@ -56,6 +57,7 @@ export default function ShopPage({
       </section>
       <ShopFilters
         products={products}
+        categoryOptions={categoryRows}
         initialCategory={initialCategory}
         initialFeaturedOnly={initialFeaturedOnly}
       />

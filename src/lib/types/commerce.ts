@@ -1,4 +1,5 @@
-export type ProductCategory = "skincare" | "hair" | "body" | "fragrance";
+/** Slug key from `product_categories.slug` (admin-managed when using Supabase). */
+export type ProductCategory = string;
 
 export type Product = {
   id: string;

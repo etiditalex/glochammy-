@@ -1,7 +1,9 @@
 "use client";
 
+import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type FormEvent, useId, useState } from "react";
 
 type LoginErrors = Partial<{ email: string; password: string }>;
@@ -18,29 +20,42 @@ function validate(email: string, password: string): LoginErrors {
 }
 
 export function CustomerLoginForm() {
+  const router = useRouter();
   const emailId = useId();
   const passwordId = useId();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<LoginErrors>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const next = validate(email, password);
     setErrors(next);
+    setAuthError(null);
     if (Object.keys(next).length > 0) return;
-    setSubmitted(true);
-  }
-
-  if (submitted) {
-    return (
-      <p className="font-sans text-sm leading-relaxed text-ink" role="status">
-        Sign-in UI is ready. Account authentication will connect to Supabase in a
-        later step.
-      </p>
-    );
+    setPending(true);
+    try {
+      const supabase = createBrowserSupabaseClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      setPending(false);
+      if (error) {
+        setAuthError(error.message);
+        return;
+      }
+      router.push("/account");
+      router.refresh();
+    } catch {
+      setPending(false);
+      setAuthError(
+        "Sign-in is unavailable. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment.",
+      );
+    }
   }
 
   return (
@@ -112,11 +127,18 @@ export function CustomerLoginForm() {
         ) : null}
       </div>
 
+      {authError ? (
+        <p className="font-sans text-sm text-red-700" role="alert">
+          {authError}
+        </p>
+      ) : null}
+
       <button
         type="submit"
-        className="w-full border border-accent bg-transparent px-6 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.22em] text-ink transition-opacity hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:text-sm"
+        disabled={pending}
+        className="w-full border border-accent bg-transparent px-6 py-3.5 font-sans text-xs font-semibold uppercase tracking-[0.22em] text-ink transition-opacity hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink enabled:cursor-pointer enabled:hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
       >
-        Sign in
+        {pending ? "Signing in…" : "Sign in"}
       </button>
 
       <p className="text-center font-sans text-sm">

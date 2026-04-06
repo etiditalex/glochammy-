@@ -1,13 +1,42 @@
 import { CartView } from "@/components/cart/cart-view";
 import { FadeIn } from "@/components/motion/fade-in";
+import { getShopProducts, isSupabaseConfigured } from "@/lib/products/catalog";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "Cart",
   description: "Review items in your bag and adjust quantities.",
 };
 
-export default function CartPage() {
+export default async function CartPage() {
+  const catalog = await getShopProducts();
+
+  let checkoutSession: { email: string; name: string } | null = null;
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = createServerSupabaseClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user?.email) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name, email")
+          .eq("id", user.id)
+          .maybeSingle();
+        checkoutSession = {
+          email: user.email,
+          name: (profile?.full_name as string | undefined)?.trim() ?? "",
+        };
+      }
+    } catch {
+      /* */
+    }
+  }
+
   return (
     <div className="bg-white">
       <section className="border-b border-line bg-cream">
@@ -23,7 +52,7 @@ export default function CartPage() {
         </div>
       </section>
       <div className="mx-auto min-w-0 max-w-content px-4 py-12 sm:px-8 sm:py-16">
-        <CartView />
+        <CartView catalog={catalog} checkoutSession={checkoutSession} />
       </div>
     </div>
   );

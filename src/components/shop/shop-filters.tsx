@@ -1,32 +1,34 @@
 "use client";
 
-import type { Product, ProductCategory } from "@/lib/types/commerce";
+import type { Product } from "@/lib/types/commerce";
 import { formatMoney } from "@/lib/format";
 import { ProductCard } from "@/components/product/product-card";
 import { useEffect, useMemo, useState } from "react";
 
+export type ShopCategoryOption = { slug: string; name: string };
+
 type ShopFiltersProps = {
   products: Product[];
-  initialCategory?: ProductCategory | "all";
+  categoryOptions: ShopCategoryOption[];
+  initialCategory?: string | "all";
   initialFeaturedOnly?: boolean;
 };
 
-const categories: { id: ProductCategory | "all"; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "skincare", label: "Skincare" },
-  { id: "hair", label: "Hair" },
-  { id: "body", label: "Body" },
-  { id: "fragrance", label: "Fragrance" },
-];
-
 export function ShopFilters({
   products,
+  categoryOptions,
   initialCategory = "all",
   initialFeaturedOnly = false,
 }: ShopFiltersProps) {
-  const [category, setCategory] = useState<ProductCategory | "all">(
-    initialCategory,
+  const filterButtons = useMemo(
+    () => [
+      { id: "all", label: "All" },
+      ...categoryOptions.map((c) => ({ id: c.slug, label: c.name })),
+    ],
+    [categoryOptions],
   );
+
+  const [category, setCategory] = useState<string>(initialCategory);
   const [featuredOnly, setFeaturedOnly] = useState(initialFeaturedOnly);
   const [maxPrice, setMaxPrice] = useState<number | "all">("all");
 
@@ -63,7 +65,7 @@ export function ShopFilters({
             role="group"
             aria-label="Filter by category"
           >
-            {categories.map((c) => {
+            {filterButtons.map((c) => {
               const active = category === c.id;
               return (
                 <button

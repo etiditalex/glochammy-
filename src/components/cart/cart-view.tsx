@@ -1,7 +1,8 @@
 "use client";
 
+import { CartCheckout } from "@/components/cart/cart-checkout";
 import { useCart } from "@/context/cart-context";
-import { products } from "@/lib/data/products";
+import { products as staticCatalog } from "@/lib/data/products";
 import { formatMoney } from "@/lib/format";
 import type { Product } from "@/lib/types/commerce";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -11,14 +12,21 @@ import Link from "next/link";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 
-export function CartView() {
+type CartViewProps = {
+  /** When set (e.g. from Supabase-backed shop), resolves line items; otherwise static demo catalog. */
+  catalog?: Product[];
+  checkoutSession?: { email: string; name: string } | null;
+};
+
+export function CartView({ catalog, checkoutSession }: CartViewProps) {
   const { lines, setQuantity, clear } = useCart();
+  const list = catalog ?? staticCatalog;
 
   const catalogById = useMemo(() => {
     const m = new Map<string, Product>();
-    products.forEach((p) => m.set(p.id, p));
+    list.forEach((p) => m.set(p.id, p));
     return m;
-  }, []);
+  }, [list]);
 
   const rows = useMemo(() => {
     return lines
@@ -148,10 +156,9 @@ export function CartView() {
             <span>{formatMoney(subtotalCents, currency)}</span>
           </div>
         </div>
-        <div className="mt-8 space-y-3">
-          <ButtonPush type="button" className="w-full">
-            Checkout
-          </ButtonPush>
+        <CartCheckout catalog={list} checkoutSession={checkoutSession} />
+
+        <div className="mt-6 space-y-3">
           <ButtonPush
             type="button"
             variant="secondary"
@@ -161,9 +168,6 @@ export function CartView() {
             Clear bag
           </ButtonPush>
         </div>
-        <p className="mt-4 text-2xs leading-relaxed text-muted">
-          Checkout is a visual placeholder—wire your gateway when ready.
-        </p>
       </aside>
     </div>
   );

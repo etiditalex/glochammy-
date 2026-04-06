@@ -1,8 +1,9 @@
 "use client";
 
+import { submitBookingAction } from "@/app/actions/booking";
 import { FadeIn } from "@/components/motion/fade-in";
 import { ButtonPush } from "@/components/ui/button-push";
-import { salonServices } from "@/lib/data/services";
+import { getServiceById, salonServices } from "@/lib/data/services";
 import {
   type BookingFormValues,
   validateBooking,
@@ -25,6 +26,8 @@ export function BookingForm() {
     {},
   );
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   const minDate = useMemo(() => {
     const d = new Date();
@@ -40,11 +43,21 @@ export function BookingForm() {
     setErrors((e) => ({ ...e, [key]: undefined }));
   }
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
     const nextErrors = validateBooking(values);
     setErrors(nextErrors);
+    setSubmitError(null);
     if (Object.keys(nextErrors).length > 0) return;
+    const svc = getServiceById(values.serviceId);
+    const serviceName = svc?.name ?? values.serviceId;
+    setPending(true);
+    const result = await submitBookingAction({ ...values, serviceName });
+    setPending(false);
+    if (!result.ok) {
+      setSubmitError(result.error);
+      return;
+    }
     setSubmitted(true);
   }
 
@@ -221,8 +234,16 @@ export function BookingForm() {
         />
       </div>
 
+      {submitError ? (
+        <p className="md:col-span-2 text-sm text-red-700" role="alert">
+          {submitError}
+        </p>
+      ) : null}
+
       <div className="md:col-span-2">
-        <ButtonPush type="submit">Request appointment</ButtonPush>
+        <ButtonPush type="submit" disabled={pending}>
+          {pending ? "Sending…" : "Request appointment"}
+        </ButtonPush>
       </div>
     </form>
   );
