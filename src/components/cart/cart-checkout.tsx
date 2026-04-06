@@ -71,6 +71,9 @@ export function CartCheckout({ catalog, checkoutSession }: Props) {
           <span className="font-mono text-ink">{doneId.slice(0, 8)}</span>. We will follow up by
           email.
         </p>
+        <p className="mt-3 text-2xs leading-relaxed text-muted">
+          After you try your products, open them in the shop to leave a star rating and a short review.
+        </p>
       </div>
     );
   }
@@ -79,7 +82,8 @@ export function CartCheckout({ catalog, checkoutSession }: Props) {
     <div className="space-y-4">
       <h3 className="text-sm font-medium uppercase tracking-nav text-muted">Checkout</h3>
       <p className="text-2xs leading-relaxed text-muted">
-        Enter your details below. We will email you about your order and any updates.
+        Enter your details below. We will email you about your order and any updates. Product ratings and
+        reviews are on each item&apos;s page in the shop—not on this checkout screen.
       </p>
 
       <div>

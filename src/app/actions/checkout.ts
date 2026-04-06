@@ -13,6 +13,29 @@ export type CheckoutResult =
   | { ok: true; orderId: string }
   | { ok: false; error: string };
 
+function mapCreateStorefrontOrderError(message: string | undefined): string {
+  const raw = message?.trim() ?? "";
+  const m = raw.toLowerCase();
+  if (!raw) return "Could not create order.";
+  if (m.includes("product not found")) {
+    return "Could not load one or more products. Remove old demo items from your bag and add products from the shop again.";
+  }
+  if (m.includes("mixed currency")) {
+    return "Your bag mixes currencies. Remove items and add only products priced in one currency.";
+  }
+  if (m.includes("invalid quantity")) {
+    return "One or more line items have an invalid quantity.";
+  }
+  if (m.includes("no items")) return "Your bag is empty.";
+  if (m.includes("email required") || m.includes("name required")) {
+    return "Enter your name and email.";
+  }
+  if (m.includes("create_storefront_order")) {
+    return "Run the Supabase migration that adds create_storefront_order (see supabase/migrations).";
+  }
+  return raw;
+}
+
 export async function createOrderAction(input: {
   lines: CheckoutLine[];
   customerEmail: string;
@@ -37,84 +60,28 @@ export async function createOrderAction(input: {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const productIds = Array.from(new Set(input.lines.map((l) => l.productId)));
-  const { data: products, error: productsError } = await supabase
-    .from("products")
-    .select("id, name, price_cents, currency")
-    .in("id", productIds);
+  for (const line of input.lines) {
+    if (line.quantity <= 0) {
+      return { ok: false, error: "One or more items have an invalid quantity." };
+    }
+  }
 
-  if (productsError || !products?.length) {
+  const { data: orderId, error: orderError } = await supabase.rpc("create_storefront_order", {
+    p_customer_email: email,
+    p_customer_name: name,
+    p_phone: input.phone?.trim() || null,
+    p_items: input.lines.map((l) => ({
+      product_id: l.productId,
+      quantity: l.quantity,
+    })),
+  });
+
+  if (orderError || !orderId) {
+    console.error("createOrder", orderError);
     return {
       ok: false,
-      error:
-        "Could not load products. Remove old demo items from your bag and add products from the shop again.",
+      error: mapCreateStorefrontOrderError(orderError?.message),
     };
-  }
-
-  const byId = new Map(products.map((p) => [p.id as string, p]));
-  let totalCents = 0;
-  const currency = (products[0]?.currency as string) || "KES";
-  const rows: {
-    product_id: string;
-    product_name: string;
-    unit_price_cents: number;
-    quantity: number;
-    line_total_cents: number;
-  }[] = [];
-
-  for (const line of input.lines) {
-    const p = byId.get(line.productId);
-    if (!p || line.quantity <= 0) {
-      return { ok: false, error: "One or more items in your bag are no longer available." };
-    }
-    const unit = p.price_cents as number;
-    const lineTotal = unit * line.quantity;
-    totalCents += lineTotal;
-    rows.push({
-      product_id: line.productId,
-      product_name: p.name as string,
-      unit_price_cents: unit,
-      quantity: line.quantity,
-      line_total_cents: lineTotal,
-    });
-  }
-
-  const { data: order, error: orderError } = await supabase
-    .from("orders")
-    .insert({
-      user_id: user?.id ?? null,
-      customer_email: email,
-      customer_name: name,
-      phone: input.phone?.trim() || null,
-      total_cents: totalCents,
-      currency,
-      status: "pending",
-    })
-    .select("id")
-    .single();
-
-  if (orderError || !order?.id) {
-    console.error("createOrder", orderError);
-    return { ok: false, error: orderError?.message ?? "Could not create order." };
-  }
-
-  const orderId = order.id as string;
-
-  const { error: itemsError } = await supabase.from("order_items").insert(
-    rows.map((r) => ({
-      order_id: orderId,
-      product_id: r.product_id,
-      product_name: r.product_name,
-      unit_price_cents: r.unit_price_cents,
-      quantity: r.quantity,
-      line_total_cents: r.line_total_cents,
-    })),
-  );
-
-  if (itemsError) {
-    await supabase.from("orders").delete().eq("id", orderId);
-    console.error("createOrder items", itemsError);
-    return { ok: false, error: itemsError.message };
   }
 
   revalidatePath("/admin");
@@ -124,5 +91,5 @@ export async function createOrderAction(input: {
     revalidatePath(`/admin/customers/${user.id}`);
   }
 
-  return { ok: true, orderId };
+  return { ok: true, orderId: String(orderId) };
 }
