@@ -2,7 +2,7 @@
 
 import { createOrderAction } from "@/app/actions/checkout";
 import { useCart } from "@/context/cart-context";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isBrowserSupabaseConfigured } from "@/lib/supabase/env";
 import { ButtonPush } from "@/components/ui/button-push";
 import type { Product } from "@/lib/types/commerce";
 import { useState } from "react";
@@ -22,7 +22,7 @@ export function CartCheckout({ catalog, checkoutSession }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [doneId, setDoneId] = useState<string | null>(null);
 
-  const configured = isSupabaseConfigured();
+  const configured = isBrowserSupabaseConfigured();
 
   async function submit() {
     setError(null);

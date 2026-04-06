@@ -41,12 +41,19 @@ export async function registerCustomerAction(input: {
       return { ok: false, error: error.message };
     }
 
-    await sendWelcomeEmail({ to: email, firstName });
+    let welcomeSent = false;
+    try {
+      await sendWelcomeEmail({ to: email, firstName });
+      welcomeSent = true;
+    } catch (emailErr) {
+      console.error("sendWelcomeEmail", emailErr);
+    }
 
     return {
       ok: true,
-      message:
-        "Check your inbox: we sent a confirmation link (and a welcome note from us). You may need to enter a one-time code if your email provider shows it instead of the link.",
+      message: welcomeSent
+        ? "Check your inbox: we sent a confirmation link (and a welcome note from us). You may need to enter a one-time code if your email provider shows it instead of the link."
+        : "Your account was created. Check your inbox for the confirmation link to verify your email. You may need to enter a one-time code if your email provider shows it instead of the link. (We could not send the extra welcome email just now—you can still sign in once verified.)",
     };
   } catch (e) {
     console.error(e);

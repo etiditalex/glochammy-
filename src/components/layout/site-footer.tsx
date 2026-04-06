@@ -25,6 +25,7 @@ const legalLinks: { label: string; href: string }[] = [
   { label: "Terms and Conditions", href: "/terms" },
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Cookies Settings", href: "/cookies" },
+  { label: "Admin login", href: "/admin/login" },
 ];
 
 const linkClass =

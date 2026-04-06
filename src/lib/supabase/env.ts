@@ -35,3 +35,12 @@ export function getBrowserSupabaseAnonKey(): string | undefined {
   const v = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]?.trim();
   return v || undefined;
 }
+
+/**
+ * Use in client components instead of {@link isSupabaseConfigured}: only
+ * `NEXT_PUBLIC_*` exists in the browser bundle, so this matches server/client
+ * hydration. Server-only `SUPABASE_*` does not make this true on the client.
+ */
+export function isBrowserSupabaseConfigured(): boolean {
+  return Boolean(getBrowserSupabaseUrl() && getBrowserSupabaseAnonKey());
+}
