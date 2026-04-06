@@ -30,3 +30,7 @@ export const SERVICE_DEPARTMENTS: readonly string[] = [
 ];
 
 export const ANNOUNCEMENT_DISMISS_KEY = "glochammy-announcement-dismissed";
+
+/** When a product has no image URLs; matches catalog fallback. */
+export const FALLBACK_PRODUCT_IMAGE_URL =
+  "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&w=1200&q=80";

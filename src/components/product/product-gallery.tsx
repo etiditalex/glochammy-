@@ -1,5 +1,6 @@
 "use client";
 
+import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -10,16 +11,17 @@ type ProductGalleryProps = {
 
 export function ProductGallery({ name, images }: ProductGalleryProps) {
   const [active, setActive] = useState(0);
-  const main = images[active] ?? images[0];
+  const urls = images.length > 0 ? images : [FALLBACK_PRODUCT_IMAGE_URL];
+  const main = urls[active] ?? urls[0];
 
   return (
     <div className="grid gap-4 lg:grid-cols-[84px_1fr] lg:items-start">
       <div className="order-2 flex gap-3 overflow-x-auto overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:order-1 lg:flex-col lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
-        {images.map((src, i) => {
+        {urls.map((src, i) => {
           const selected = i === active;
           return (
             <button
-              key={src}
+              key={`${i}-${src}`}
               type="button"
               onClick={() => setActive(i)}
               aria-label={`View image ${i + 1}`}
@@ -34,6 +36,7 @@ export function ProductGallery({ name, images }: ProductGalleryProps) {
                 fill
                 sizes="(min-width: 1024px) 120px, 80px"
                 className="object-cover"
+                loading="lazy"
               />
             </button>
           );

@@ -1,5 +1,6 @@
 "use client";
 
+import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import { formatMoney } from "@/lib/format";
 import type { Product } from "@/lib/types/commerce";
 import { motion, useReducedMotion } from "framer-motion";
@@ -19,7 +20,7 @@ export function ProductCard({
   flush = false,
 }: ProductCardProps) {
   const reduce = useReducedMotion();
-  const cover = product.images[0];
+  const cover = product.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL;
   const frame = flush ? "" : "border border-line";
   const CardInner = (
     <article className={`group flex h-full flex-col bg-white ${frame}`}>

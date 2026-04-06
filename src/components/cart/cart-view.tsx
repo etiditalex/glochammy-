@@ -5,6 +5,7 @@ import { useCart } from "@/context/cart-context";
 import { products as staticCatalog } from "@/lib/data/products";
 import { formatMoney } from "@/lib/format";
 import type { Product } from "@/lib/types/commerce";
+import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import { ButtonLink } from "@/components/ui/button-link";
 import { ButtonPush } from "@/components/ui/button-push";
 import Image from "next/image";
@@ -71,7 +72,7 @@ export function CartView({ catalog, checkoutSession }: CartViewProps) {
               className="relative h-24 w-24 shrink-0 bg-subtle sm:h-28 sm:w-28"
             >
               <Image
-                src={product.images[0]}
+                src={product.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL}
                 alt={product.name}
                 fill
                 className="object-cover"

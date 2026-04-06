@@ -3,6 +3,7 @@ import {
   getProductBySlug as staticGetBySlug,
   products as staticProducts,
 } from "@/lib/data/products";
+import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { Product } from "@/lib/types/commerce";
@@ -32,9 +33,7 @@ function rowToProduct(row: ProductRow): Product {
     priceCents: row.price_cents,
     currency: row.currency,
     category: row.category,
-    images: row.images?.length
-      ? row.images
-      : ["https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&w=1200&q=80"],
+    images: row.images?.length ? row.images : [FALLBACK_PRODUCT_IMAGE_URL],
     featured: row.featured ?? false,
   };
 }

@@ -16,6 +16,12 @@ const nextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      // Product uploads (Supabase Storage public URLs, e.g. …/storage/v1/object/public/product-images/…)
+      {
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
     ],
   },
 };
