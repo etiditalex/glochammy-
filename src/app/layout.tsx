@@ -38,15 +38,7 @@ export const metadata: Metadata = {
   },
   description: BRAND.tagline,
   applicationName: BRAND.shortName,
-  icons: {
-    icon: [
-      { url: BRAND.iconSrc, sizes: "512x512", type: "image/png" },
-      { url: BRAND.iconSrc, sizes: "192x192", type: "image/png" },
-      { url: BRAND.iconSrc, sizes: "32x32", type: "image/png" },
-    ],
-    apple: [{ url: BRAND.iconSrc, sizes: "180x180", type: "image/png" }],
-    shortcut: BRAND.iconSrc,
-  },
+  /** Favicons: `src/app/icon.png` and `src/app/apple-icon.png` (file convention). */
   openGraph: {
     title: BRAND.name,
     description: BRAND.tagline,

@@ -8,9 +8,10 @@ export const BRAND = {
     "Everything you need to look and feel your best—quality products plus expert salon and nails care.",
   logoSrc:
     "https://res.cloudinary.com/dyfnobo9r/image/upload/f_auto,q_auto,w_600/v1775097905/glochammy_logo-beauty_jt8hxr.png",
-  /** Square PNG: browser tab, Apple touch icon, and platforms that use the site icon in previews. */
-  iconSrc:
-    "https://res.cloudinary.com/dyfnobo9r/image/upload/w_512,h_512,c_pad,b_rgb:faf9f7,f_auto,q_auto/v1775097905/glochammy_logo-beauty_jt8hxr.png",
+  /**
+   * Site icon path (served from `src/app/icon.png`). Use with `metadataBase` for absolute URLs in markup.
+   */
+  iconSrc: "/icon.png",
   /** Default Open Graph / Twitter card when sharing the homepage or pages without their own image. */
   ogImageSrc:
     "https://res.cloudinary.com/dyfnobo9r/image/upload/w_1200,h_630,c_pad,b_rgb:faf9f7,f_auto,q_auto/v1775097905/glochammy_logo-beauty_jt8hxr.png",
