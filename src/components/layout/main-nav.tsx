@@ -64,7 +64,7 @@ export function MainNav() {
 
   return (
     <header ref={headerRef} className="relative border-b border-line bg-white">
-      <div className="mx-auto flex min-w-0 max-w-content items-center gap-3 px-4 py-4 sm:gap-6 sm:px-8 sm:py-6">
+      <div className="mx-auto flex min-w-0 max-w-content items-center gap-2 px-3 py-3 min-[380px]:gap-3 min-[380px]:px-4 min-[380px]:py-4 sm:gap-6 sm:px-8 sm:py-6">
         <Link
           href="/"
           className="relative inline-flex shrink-0 items-center"
@@ -73,10 +73,10 @@ export function MainNav() {
           <Image
             src={BRAND.logoSrc}
             alt=""
-            width={240}
-            height={69}
-            sizes="(min-width: 640px) 240px, 192px"
-            className="h-12 w-auto sm:h-14"
+            width={220}
+            height={63}
+            sizes="(max-width: 374px) 132px, (max-width: 639px) 156px, 220px"
+            className="h-8 w-auto min-[375px]:h-10 sm:h-14"
             priority
           />
         </Link>
@@ -155,7 +155,7 @@ export function MainNav() {
           </ul>
         </nav>
 
-        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-4 md:gap-5">
+        <div className="ml-auto flex shrink-0 items-center gap-0.5 min-[380px]:gap-1 sm:gap-4 md:gap-5">
           <Link
             href="/shop"
             className="hidden min-h-[44px] min-w-[44px] items-center justify-center gap-2 text-sm text-ink transition-opacity hover:opacity-60 md:inline-flex md:min-h-0 md:min-w-0 md:px-1"
@@ -166,7 +166,7 @@ export function MainNav() {
           <Link
             href="/account"
             aria-label="My account"
-            className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center text-ink transition-opacity hover:opacity-60"
+            className="hidden min-h-[44px] min-w-[44px] items-center justify-center text-ink transition-opacity hover:opacity-60 min-[375px]:inline-flex"
           >
             <User className="h-[18px] w-[18px]" strokeWidth={1.25} />
           </Link>
@@ -184,7 +184,7 @@ export function MainNav() {
           >
             <ShoppingBag className="h-[18px] w-[18px]" strokeWidth={1.25} />
             {itemCount > 0 ? (
-              <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center bg-ink px-1 text-[10px] font-medium text-white">
+              <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center bg-ink px-1 text-[10px] font-medium text-white">
                 {itemCount > 9 ? "9+" : itemCount}
               </span>
             ) : null}
@@ -224,7 +224,7 @@ export function MainNav() {
       {open ? (
         <div
           id="mobile-nav"
-          className="max-h-[min(75dvh,calc(100dvh-6rem))] overflow-y-auto overscroll-contain border-t border-line bg-white lg:hidden"
+          className="max-h-[calc(100dvh-5.25rem)] overflow-y-auto overscroll-contain border-t border-line bg-white lg:hidden"
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"

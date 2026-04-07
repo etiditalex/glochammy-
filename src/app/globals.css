@@ -25,6 +25,14 @@ body {
   overflow-x: clip;
 }
 
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
 @supports not (overflow: clip) {
   body {
     overflow-x: hidden;
