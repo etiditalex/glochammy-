@@ -38,16 +38,16 @@ export default async function ShopPage({
 
   return (
     <div className="bg-white">
-      <section className="border-b border-line bg-cream">
-        <div className="mx-auto min-w-0 max-w-content px-4 py-14 sm:px-8 sm:py-16">
-          <FadeIn>
+      <section className="bg-white">
+        <div className="mx-auto flex min-w-0 max-w-content flex-col items-center justify-center px-4 py-20 text-center sm:px-8 sm:py-24 lg:py-32">
+          <FadeIn className="flex w-full flex-col items-center">
             <p className="text-2xs font-medium uppercase tracking-nav text-muted">
               Shop
             </p>
-            <h1 className="mt-3 font-display text-4xl text-ink sm:text-5xl">
+            <h1 className="mt-4 font-display text-4xl font-medium leading-tight text-ink sm:mt-5 sm:text-5xl">
               The shelf
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
+            <p className="mt-6 max-w-2xl text-base font-normal leading-relaxed text-ink/80 sm:mt-7 sm:text-[1.0625rem] sm:leading-[1.65]">
               Filters stay simple—pick a category and a comfortable price
               ceiling. Every product page includes texture notes and how we use
               it in-studio.
