@@ -24,6 +24,9 @@ export const BRAND = {
   addressLine: "Kilifi, Charo Wa Mae — near Msenangu Butchery",
   region: "Kilifi, Kenya",
   heroYoutubeVideoId: "otej7WLdPh0",
+  /** Full-bleed mobile homepage hero (flat lay; text overlay on clear side). */
+  heroMobileImageSrc:
+    "https://res.cloudinary.com/dyfnobo9r/image/upload/f_auto,q_auto/v1775891627/hero_section_u2iruw.jpg",
 } as const;
 
 export const RETAIL_DEPARTMENTS: readonly string[] = [
