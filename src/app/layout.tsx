@@ -9,7 +9,7 @@ import "./globals.css";
 const sans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ["200", "300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -38,7 +38,10 @@ export const metadata: Metadata = {
   },
   description: BRAND.tagline,
   applicationName: BRAND.shortName,
-  /** Favicons: `src/app/icon.png` and `src/app/apple-icon.png` (file convention). */
+  icons: {
+    icon: [{ url: BRAND.iconSrc, sizes: "192x192", type: "image/png" }],
+    apple: [{ url: BRAND.appleTouchIconSrc, sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: BRAND.name,
     description: BRAND.tagline,

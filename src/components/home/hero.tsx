@@ -2,7 +2,6 @@ import { HeroTagline } from "@/components/home/hero-tagline";
 import { HeroBackgroundMedia } from "@/components/home/hero-background-media";
 import { ButtonLink } from "@/components/ui/button-link";
 import { BRAND } from "@/lib/constants";
-import Image from "next/image";
 
 const id = BRAND.heroYoutubeVideoId;
 
@@ -10,7 +9,6 @@ const heroBackgroundEmbedSrc =
   `https://www.youtube.com/embed/${id}` +
   `?autoplay=1&mute=1&loop=1&controls=0&modestbranding=1&playsinline=1&rel=0` +
   `&playlist=${id}`;
-const heroFallbackImageSrc = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
 
 export function Hero() {
   return (
@@ -21,14 +19,6 @@ export function Hero() {
       >
         <div className="absolute inset-0 z-0">
           <div className="h-full w-full overflow-hidden">
-            <Image
-              src={heroFallbackImageSrc}
-              alt=""
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-            />
             <HeroBackgroundMedia videoSrc={heroBackgroundEmbedSrc} />
           </div>
         </div>

@@ -37,7 +37,7 @@ async function resolveCategorySlug(
   return { ok: true, slug: data.slug as string };
 }
 
-async function requireAdmin(supabase: ReturnType<typeof createServerSupabaseClient>) {
+export async function requireAdmin(supabase: ReturnType<typeof createServerSupabaseClient>) {
   const {
     data: { user },
   } = await supabase.auth.getUser();

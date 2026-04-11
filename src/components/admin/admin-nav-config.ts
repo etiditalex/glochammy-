@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   LineChart,
   Mail,
+  Megaphone,
   Package,
   Settings,
   ShoppingCart,
@@ -36,6 +37,7 @@ export const adminNavSections: AdminNavSection[] = [
       { href: "/admin/reports/sales", label: "Sales report", icon: LineChart },
       { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
       { href: "/admin/inquiries", label: "Inquiries", icon: Mail },
+      { href: "/admin/email", label: "Email", icon: Megaphone },
     ],
   },
   {

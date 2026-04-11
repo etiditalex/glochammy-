@@ -10,10 +10,7 @@ export function HeroBackgroundMedia({ videoSrc }: HeroBackgroundMediaProps) {
   const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 768px)");
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const connection =
       typeof navigator !== "undefined" &&
@@ -25,12 +22,13 @@ export function HeroBackgroundMedia({ videoSrc }: HeroBackgroundMediaProps) {
     const saveData = Boolean(connection && "saveData" in connection && connection.saveData);
 
     const update = () => {
-      setShowVideo(media.matches && !prefersReducedMotion && !saveData);
+      const prefersReducedMotion = motionQuery.matches;
+      setShowVideo(!prefersReducedMotion && !saveData);
     };
 
     update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    motionQuery.addEventListener("change", update);
+    return () => motionQuery.removeEventListener("change", update);
   }, []);
 
   if (!showVideo) return null;
