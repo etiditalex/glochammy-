@@ -40,7 +40,7 @@ export function ProductCard({
             sizes={
               flush
                 ? "(min-width: 1024px) 26vw, (min-width: 640px) 50vw, 50vw"
-                : "(min-width: 1280px) 320px, (min-width: 1024px) 28vw, (min-width: 640px) 45vw, 50vw"
+                : "(min-width: 1280px) 20vw, (min-width: 1024px) 22vw, (min-width: 640px) 45vw, 50vw"
             }
             className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
             priority={priority}

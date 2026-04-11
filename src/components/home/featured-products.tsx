@@ -9,8 +9,8 @@ type FeaturedProductsProps = {
 export function FeaturedProducts({ products }: FeaturedProductsProps) {
   return (
     <section className="w-full border-b border-line bg-white py-12 sm:py-16 lg:py-20">
-      <div className="mx-auto min-w-0 w-full max-w-content px-4 sm:px-8 lg:px-10">
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 md:gap-8">
+      <div className="min-w-0 w-full px-2 sm:px-4 lg:px-6 xl:px-8">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-5 lg:gap-4 xl:gap-5">
           {products.map((p, i) => (
             <FadeIn key={p.id} delay={i * 0.05} className="min-w-0">
               <ProductCard product={p} priority={i < 2} />

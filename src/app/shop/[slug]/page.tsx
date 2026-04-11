@@ -144,7 +144,7 @@ export default async function ProductPage({ params }: Props) {
                 You may also like
               </h2>
             </FadeIn>
-            <div className="mt-10 grid min-w-0 grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
+            <div className="mt-10 grid min-w-0 grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-5">
               {related.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}

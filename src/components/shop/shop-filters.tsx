@@ -54,102 +54,109 @@ export function ShopFilters({
   }, [products, category, maxPrice, featuredOnly]);
 
   return (
-    <div className="mx-auto min-w-0 max-w-content px-4 sm:px-8">
-      <div className="flex flex-col gap-6 border-b border-line py-8 lg:flex-row lg:items-end lg:justify-between">
-        <fieldset className="min-w-0">
-          <legend className="text-2xs font-medium uppercase tracking-nav text-muted">
-            Category
-          </legend>
-          <div
-            className="mt-3 flex flex-wrap gap-2"
-            role="group"
-            aria-label="Filter by category"
-          >
-            {filterButtons.map((c) => {
-              const active = category === c.id;
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  onClick={() => setCategory(c.id)}
-                  className={`min-h-[44px] rounded-none border px-3 py-2 text-2xs uppercase tracking-nav transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:min-h-[40px] sm:text-xs ${
-                    active
-                      ? "border-ink bg-ink text-white"
-                      : "border-line bg-white text-ink hover:bg-subtle"
-                  }`}
-                  aria-pressed={active}
-                >
-                  {c.label}
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-
-        <div className="flex flex-wrap items-end gap-4 lg:max-w-xs lg:flex-col lg:items-stretch lg:text-right">
-          <fieldset>
-            <legend className="text-2xs font-medium uppercase tracking-nav text-muted lg:text-right">
-              Shelf edit
+    <div className="min-w-0 w-full">
+      <div className="mx-auto min-w-0 max-w-content px-4 sm:px-8">
+        <div className="flex flex-col gap-6 border-b border-line py-8 lg:flex-row lg:items-end lg:justify-between">
+          <fieldset className="min-w-0">
+            <legend className="text-2xs font-medium uppercase tracking-nav text-muted">
+              Category
             </legend>
-            <button
-              type="button"
-              onClick={() => setFeaturedOnly((v) => !v)}
-              aria-pressed={featuredOnly}
-              className={`mt-3 min-h-[44px] w-full rounded-none border px-3 py-2 text-2xs uppercase tracking-nav transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:min-h-[40px] sm:text-xs ${
-                featuredOnly
-                  ? "border-ink bg-ink text-white"
-                  : "border-line bg-white text-ink hover:bg-subtle"
-              }`}
+            <div
+              className="mt-3 flex flex-wrap gap-2"
+              role="group"
+              aria-label="Filter by category"
             >
-              Staff picks only
-            </button>
+              {filterButtons.map((c) => {
+                const active = category === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setCategory(c.id)}
+                    className={`min-h-[44px] rounded-none border px-3 py-2 text-2xs uppercase tracking-nav transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:min-h-[40px] sm:text-xs ${
+                      active
+                        ? "border-ink bg-ink text-white"
+                        : "border-line bg-white text-ink hover:bg-subtle"
+                    }`}
+                    aria-pressed={active}
+                  >
+                    {c.label}
+                  </button>
+                );
+              })}
+            </div>
           </fieldset>
 
-          <div className="min-w-0 flex-1 lg:w-full lg:text-right">
-            <label
-              htmlFor="price-range"
-              className="text-2xs font-medium uppercase tracking-nav text-muted"
-            >
-              Max price
-            </label>
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center lg:flex-col lg:items-stretch">
-              <select
-                id="price-range"
-                value={maxPrice === "all" ? "all" : String(maxPrice)}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setMaxPrice(v === "all" ? "all" : Number(v));
-                }}
-                className="min-h-[48px] w-full max-w-full border border-line bg-white px-3 py-2 text-base text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:min-h-[44px]"
+          <div className="flex flex-wrap items-end gap-4 lg:max-w-xs lg:flex-col lg:items-stretch lg:text-right">
+            <fieldset>
+              <legend className="text-2xs font-medium uppercase tracking-nav text-muted lg:text-right">
+                Shelf edit
+              </legend>
+              <button
+                type="button"
+                onClick={() => setFeaturedOnly((v) => !v)}
+                aria-pressed={featuredOnly}
+                className={`mt-3 min-h-[44px] w-full rounded-none border px-3 py-2 text-2xs uppercase tracking-nav transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:min-h-[40px] sm:text-xs ${
+                  featuredOnly
+                    ? "border-ink bg-ink text-white"
+                    : "border-line bg-white text-ink hover:bg-subtle"
+                }`}
               >
-                <option value="all">Any</option>
-                {[0.25, 0.5, 0.75, 1].map((fraction) => {
-                  const cents = Math.ceil(priceCeiling * fraction);
-                  const label =
-                    fraction === 1
-                      ? `Up to ${formatMoney(priceCeiling, products[0]?.currency ?? "KES")}`
-                      : `Up to ${formatMoney(cents, products[0]?.currency ?? "KES")}`;
-                  return (
-                    <option key={fraction} value={String(cents)}>
-                      {label}
-                    </option>
-                  );
-                })}
-              </select>
+                Staff picks only
+              </button>
+            </fieldset>
+
+            <div className="min-w-0 flex-1 lg:w-full lg:text-right">
+              <label
+                htmlFor="price-range"
+                className="text-2xs font-medium uppercase tracking-nav text-muted"
+              >
+                Max price
+              </label>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center lg:flex-col lg:items-stretch">
+                <select
+                  id="price-range"
+                  value={maxPrice === "all" ? "all" : String(maxPrice)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setMaxPrice(v === "all" ? "all" : Number(v));
+                  }}
+                  className="min-h-[48px] w-full max-w-full border border-line bg-white px-3 py-2 text-base text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:min-h-[44px]"
+                >
+                  <option value="all">Any</option>
+                  {[0.25, 0.5, 0.75, 1].map((fraction) => {
+                    const cents = Math.ceil(priceCeiling * fraction);
+                    const label =
+                      fraction === 1
+                        ? `Up to ${formatMoney(priceCeiling, products[0]?.currency ?? "KES")}`
+                        : `Up to ${formatMoney(cents, products[0]?.currency ?? "KES")}`;
+                    return (
+                      <option key={fraction} value={String(cents)}>
+                        {label}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-16 text-sm text-muted" role="status">
+        <p
+          className="px-4 py-16 text-center text-sm text-muted sm:px-8"
+          role="status"
+        >
           No products match these filters. Try widening your selection.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 py-12 sm:gap-6 lg:grid-cols-3">
-          {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+        <div className="w-full px-2 py-10 sm:px-4 lg:px-6 xl:px-8">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5 lg:gap-4 xl:gap-5">
+            {filtered.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -9,6 +9,7 @@ import {
   Settings,
   ShoppingCart,
   Tag,
+  UserPlus,
   Users,
   Warehouse,
   LayoutGrid,
@@ -38,6 +39,7 @@ export const adminNavSections: AdminNavSection[] = [
       { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
       { href: "/admin/inquiries", label: "Inquiries", icon: Mail },
       { href: "/admin/email", label: "Email", icon: Megaphone },
+      { href: "/admin/users", label: "Team & accounts", icon: UserPlus },
     ],
   },
   {
