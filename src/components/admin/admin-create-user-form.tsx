@@ -37,16 +37,6 @@ export function AdminCreateUserForm() {
     <form onSubmit={onSubmit} className="space-y-6 border border-line bg-white p-6 sm:p-8">
       <div>
         <h2 className="font-display text-xl text-ink">Create account</h2>
-        <p className="mt-2 text-sm text-muted">
-          Creates a Supabase Auth user and sets their <span className="font-mono text-xs">profiles.role</span>.
-          <strong className="font-medium text-ink"> Admin</strong> can open this dashboard;{" "}
-          <strong className="font-medium text-ink">Customer</strong> is for the storefront only.
-        </p>
-        <p className="mt-3 text-2xs leading-relaxed text-muted">
-          Requires <span className="font-mono">SUPABASE_SERVICE_ROLE_KEY</span> on the server (never
-          exposed to the browser). Set it in Vercel or <span className="font-mono">.env.local</span> and
-          redeploy if account creation fails.
-        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
