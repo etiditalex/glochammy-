@@ -39,8 +39,8 @@ export function ProductCard({
             fill
             sizes={
               flush
-                ? "(min-width: 1024px) 26vw, (min-width: 640px) 50vw, 100vw"
-                : "(min-width: 1280px) 320px, (min-width: 1024px) 28vw, (min-width: 640px) 45vw, 92vw"
+                ? "(min-width: 1024px) 26vw, (min-width: 640px) 50vw, 50vw"
+                : "(min-width: 1280px) 320px, (min-width: 1024px) 28vw, (min-width: 640px) 45vw, 50vw"
             }
             className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
             priority={priority}
@@ -66,7 +66,7 @@ export function ProductCard({
           type="button"
           variant="primary"
           onClick={() => addItem(product.id, 1)}
-          className="w-full sm:min-w-[140px]"
+          className="w-full whitespace-nowrap px-3 py-2.5 text-xs leading-tight sm:min-h-[48px] sm:min-w-[140px] sm:whitespace-normal sm:px-6 sm:py-3 sm:text-sm sm:leading-normal"
           aria-label={`Add ${product.name} to bag`}
         >
           Add to bag

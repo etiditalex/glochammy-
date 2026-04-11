@@ -11,12 +11,15 @@ import { ButtonPush } from "@/components/ui/button-push";
 import type { Product } from "@/lib/types/commerce";
 import { useEffect, useState } from "react";
 
+export type OrderCompleteInfo = { orderId: string; kind: "mpesa" | "later" };
+
 type Props = {
   catalog: Product[];
   checkoutSession?: { email: string; name: string } | null;
   currency: string;
   mpesaConfigured: boolean;
   mpesaAutoComplete: boolean;
+  onPlacedOrderAction?: (info: OrderCompleteInfo) => void;
 };
 
 export function CartCheckout({
@@ -25,6 +28,7 @@ export function CartCheckout({
   currency,
   mpesaConfigured,
   mpesaAutoComplete,
+  onPlacedOrderAction,
 }: Props) {
   const { lines, clear } = useCart();
   const [email, setEmail] = useState(checkoutSession?.email ?? "");
@@ -32,8 +36,6 @@ export function CartCheckout({
   const [phone, setPhone] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [doneId, setDoneId] = useState<string | null>(null);
-  const [successKind, setSuccessKind] = useState<"mpesa" | "later" | null>(null);
   const [mpesaPhase, setMpesaPhase] = useState<"idle" | "waiting" | "timed_out">("idle");
   const [mpesaHint, setMpesaHint] = useState<string | null>(null);
   const [pollOrderId, setPollOrderId] = useState<string | null>(null);
@@ -59,9 +61,8 @@ export function CartCheckout({
         setMpesaPhase("idle");
         setPollOrderId(null);
         setPollNonce(null);
-        setSuccessKind("mpesa");
-        setDoneId(pollOrderId);
         setMpesaHint(null);
+        onPlacedOrderAction?.({ orderId: pollOrderId, kind: "mpesa" });
         clear();
       }
     };
@@ -78,7 +79,7 @@ export function CartCheckout({
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [mpesaPhase, pollOrderId, pollNonce, clear]);
+  }, [mpesaPhase, pollOrderId, pollNonce, clear, onPlacedOrderAction]);
 
   async function submitPayLater() {
     setError(null);
@@ -116,8 +117,7 @@ export function CartCheckout({
       setError(result.error);
       return;
     }
-    setSuccessKind("later");
-    setDoneId(result.orderId);
+    onPlacedOrderAction?.({ orderId: result.orderId, kind: "later" });
     clear();
   }
 
@@ -167,24 +167,6 @@ export function CartCheckout({
     setPollOrderId(result.orderId);
     setPollNonce(result.nonce);
     setMpesaPhase("waiting");
-  }
-
-  if (doneId) {
-    const headline =
-      successKind === "mpesa" ? "Payment confirmed" : "Order placed";
-    return (
-      <div className="rounded-none border border-line bg-cream p-4" role="status">
-        <p className="text-sm font-medium text-ink">{headline}</p>
-        <p className="mt-2 text-sm text-muted">
-          Thank you. Your order reference starts with{" "}
-          <span className="font-mono text-ink">{doneId.slice(0, 8)}</span>. We will follow up by
-          email.
-        </p>
-        <p className="mt-3 text-2xs leading-relaxed text-muted">
-          After you try your products, open them in the shop to leave a star rating and a short review.
-        </p>
-      </div>
-    );
   }
 
   if (mpesaPhase === "waiting" || mpesaPhase === "timed_out") {

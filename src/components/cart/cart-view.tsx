@@ -1,6 +1,10 @@
 "use client";
 
-import { CartCheckout } from "@/components/cart/cart-checkout";
+import {
+  CartCheckout,
+  type OrderCompleteInfo,
+} from "@/components/cart/cart-checkout";
+import { OrderThankYou } from "@/components/cart/order-thank-you";
 import { useCart } from "@/context/cart-context";
 import { products as staticCatalog } from "@/lib/data/products";
 import { formatMoney } from "@/lib/format";
@@ -20,6 +24,9 @@ type CartViewProps = {
   mpesaConfigured?: boolean;
   /** When false, STK works but webhook cannot mark orders paid until SUPABASE_SERVICE_ROLE_KEY is set. */
   mpesaAutoComplete?: boolean;
+  /** After checkout, show thank-you instead of the empty-bag state. */
+  orderComplete: OrderCompleteInfo | null;
+  onOrderComplete: (info: OrderCompleteInfo) => void;
 };
 
 export function CartView({
@@ -27,6 +34,8 @@ export function CartView({
   checkoutSession,
   mpesaConfigured,
   mpesaAutoComplete,
+  orderComplete,
+  onOrderComplete,
 }: CartViewProps) {
   const { lines, setQuantity, clear } = useCart();
   const list = catalog ?? staticCatalog;
@@ -55,6 +64,12 @@ export function CartView({
   }, [rows]);
 
   const currency = rows[0]?.product.currency ?? "KES";
+
+  if (orderComplete) {
+    return (
+      <OrderThankYou orderId={orderComplete.orderId} kind={orderComplete.kind} />
+    );
+  }
 
   if (rows.length === 0) {
     return (
@@ -171,6 +186,7 @@ export function CartView({
           currency={currency}
           mpesaConfigured={mpesaConfigured ?? false}
           mpesaAutoComplete={mpesaAutoComplete ?? false}
+          onPlacedOrderAction={onOrderComplete}
         />
 
         <div className="mt-6 space-y-3">

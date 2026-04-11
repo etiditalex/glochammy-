@@ -30,12 +30,12 @@ export function SalonPreview({ services }: SalonPreviewProps) {
         <div className="mt-12 grid gap-6 lg:grid-cols-3">
           {preview.map((s, i) => (
             <FadeIn key={s.id} delay={i * 0.05}>
-              <article className="flex h-full flex-col border border-line bg-white p-6">
+              <article className="flex h-full flex-col border border-line bg-white p-6 text-center sm:text-left">
                 <h3 className="text-base font-medium text-ink">{s.name}</h3>
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">
                   {s.description}
                 </p>
-                <div className="mt-6 flex items-baseline justify-between gap-4 border-t border-line pt-5">
+                <div className="mt-6 flex flex-col items-center gap-2 border-t border-line pt-5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                   <p className="text-sm text-muted">{s.durationMinutes} minutes</p>
                   <p className="text-sm font-medium text-ink">
                     {formatMoney(s.priceCents, s.currency)}

@@ -146,7 +146,7 @@ export function ShopFilters({
           No products match these filters. Try widening your selection.
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-6 py-12 min-[520px]:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 py-12 sm:gap-6 lg:grid-cols-3">
           {filtered.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
