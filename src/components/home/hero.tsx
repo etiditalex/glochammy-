@@ -14,7 +14,7 @@ export function Hero() {
   return (
     <>
       <section
-        className="relative isolate min-h-[88vh] w-full overflow-hidden bg-ink supports-[min-height:1dvh]:min-h-[88dvh]"
+        className="relative isolate min-h-[100svh] w-full overflow-hidden bg-ink supports-[min-height:1dvh]:min-h-[100dvh] md:min-h-[88vh] md:supports-[min-height:1dvh]:min-h-[88dvh]"
         aria-label="Video"
       >
         <div className="absolute inset-0 z-0">
