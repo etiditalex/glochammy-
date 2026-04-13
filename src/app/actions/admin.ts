@@ -385,3 +385,161 @@ export async function updateOrderStatusAction(
   revalidatePath("/admin");
   return { ok: true };
 }
+
+export type WalkInPaymentMethod = "cash" | "mpesa";
+
+const WALK_IN_PAYMENT_METHODS: readonly WalkInPaymentMethod[] = ["cash", "mpesa"];
+
+function parseMajorToCents(raw: string, label: string): { ok: true; cents: number } | { ok: false; error: string } {
+  const n = Number.parseFloat(raw.trim().replace(/,/g, ""));
+  if (!Number.isFinite(n) || n < 0) {
+    return { ok: false, error: `Enter a valid ${label} amount.` };
+  }
+  return { ok: true, cents: Math.round(n * 100) };
+}
+
+function parseWalkInSaleInput(formData: FormData): {
+  ok: true;
+  itemName: string;
+  quantity: number;
+  unitPriceCents: number;
+  currency: string;
+  paymentMethod: WalkInPaymentMethod;
+  mpesaCode: string | null;
+  notes: string | null;
+  soldAt: string;
+} | { ok: false; error: string } {
+  const itemName = String(formData.get("itemName") ?? "").trim();
+  const quantityRaw = String(formData.get("quantity") ?? "").trim();
+  const unitPriceRaw = String(formData.get("unitPrice") ?? "").trim();
+  const currency = String(formData.get("currency") ?? "KES").trim().toUpperCase() || "KES";
+  const paymentMethod = String(formData.get("paymentMethod") ?? "cash")
+    .trim()
+    .toLowerCase() as WalkInPaymentMethod;
+  const mpesaCodeRaw = String(formData.get("mpesaCode") ?? "").trim().toUpperCase();
+  const notesRaw = String(formData.get("notes") ?? "").trim();
+  const soldAtRaw = String(formData.get("soldAt") ?? "").trim();
+
+  if (!itemName) return { ok: false, error: "Enter an item name." };
+
+  const quantity = Number.parseInt(quantityRaw, 10);
+  if (!Number.isFinite(quantity) || quantity <= 0) {
+    return { ok: false, error: "Quantity must be a whole number above zero." };
+  }
+
+  const unit = parseMajorToCents(unitPriceRaw, "unit price");
+  if (!unit.ok) return unit;
+
+  if (!WALK_IN_PAYMENT_METHODS.includes(paymentMethod)) {
+    return { ok: false, error: "Choose a valid payment method." };
+  }
+
+  const mpesaCode = mpesaCodeRaw || null;
+  if (paymentMethod === "mpesa" && !mpesaCode) {
+    return { ok: false, error: "Enter the M-Pesa code for M-Pesa payments." };
+  }
+  if (paymentMethod === "cash" && mpesaCode) {
+    return { ok: false, error: "M-Pesa code should be empty for cash sales." };
+  }
+
+  const soldAtIso = soldAtRaw ? new Date(soldAtRaw).toISOString() : new Date().toISOString();
+  if (!soldAtIso || Number.isNaN(Date.parse(soldAtIso))) {
+    return { ok: false, error: "Enter a valid sale date and time." };
+  }
+
+  return {
+    ok: true,
+    itemName,
+    quantity,
+    unitPriceCents: unit.cents,
+    currency,
+    paymentMethod,
+    mpesaCode,
+    notes: notesRaw || null,
+    soldAt: soldAtIso,
+  };
+}
+
+function mapWalkInSaleError(error: { code?: string; message: string }): string {
+  if (error.code === "23505") {
+    return "That M-Pesa code already exists. Each M-Pesa code must be unique.";
+  }
+  return error.message;
+}
+
+export async function createWalkInSaleAction(formData: FormData): Promise<AdminActionResult> {
+  const supabase = createServerSupabaseClient();
+  const gate = await requireAdmin(supabase);
+  if (!gate.ok) return gate;
+
+  const parsed = parseWalkInSaleInput(formData);
+  if (!parsed.ok) return parsed;
+
+  const totalCents = parsed.unitPriceCents * parsed.quantity;
+  const { error } = await supabase.from("walk_in_sales").insert({
+    item_name: parsed.itemName,
+    quantity: parsed.quantity,
+    unit_price_cents: parsed.unitPriceCents,
+    total_cents: totalCents,
+    currency: parsed.currency,
+    payment_method: parsed.paymentMethod,
+    mpesa_code: parsed.paymentMethod === "mpesa" ? parsed.mpesaCode : null,
+    notes: parsed.notes,
+    sold_at: parsed.soldAt,
+    created_by: gate.user.id,
+  });
+  if (error) return { ok: false, error: mapWalkInSaleError(error) };
+
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/reports/sales");
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function updateWalkInSaleAction(
+  saleId: string,
+  formData: FormData,
+): Promise<AdminActionResult> {
+  const supabase = createServerSupabaseClient();
+  const gate = await requireAdmin(supabase);
+  if (!gate.ok) return gate;
+
+  const parsed = parseWalkInSaleInput(formData);
+  if (!parsed.ok) return parsed;
+
+  const totalCents = parsed.unitPriceCents * parsed.quantity;
+  const { error } = await supabase
+    .from("walk_in_sales")
+    .update({
+      item_name: parsed.itemName,
+      quantity: parsed.quantity,
+      unit_price_cents: parsed.unitPriceCents,
+      total_cents: totalCents,
+      currency: parsed.currency,
+      payment_method: parsed.paymentMethod,
+      mpesa_code: parsed.paymentMethod === "mpesa" ? parsed.mpesaCode : null,
+      notes: parsed.notes,
+      sold_at: parsed.soldAt,
+    })
+    .eq("id", saleId);
+  if (error) return { ok: false, error: mapWalkInSaleError(error) };
+
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/reports/sales");
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function deleteWalkInSaleAction(saleId: string): Promise<AdminActionResult> {
+  const supabase = createServerSupabaseClient();
+  const gate = await requireAdmin(supabase);
+  if (!gate.ok) return gate;
+
+  const { error } = await supabase.from("walk_in_sales").delete().eq("id", saleId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/reports/sales");
+  revalidatePath("/admin");
+  return { ok: true };
+}
