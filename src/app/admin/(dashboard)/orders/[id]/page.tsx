@@ -47,9 +47,13 @@ export default async function AdminOrderDetailPage({ params }: Props) {
               : ""}
           </p>
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex max-w-xs flex-col items-end gap-2 text-right">
           <span className="text-2xs uppercase tracking-nav text-muted">Status</span>
           <OrderStatusPicker orderId={params.id} current={status} />
+          <p className="text-[11px] leading-snug text-muted">
+            After you verify payment, advance the order through processing, shipped, then delivered—or
+            cancel if needed.
+          </p>
         </div>
       </div>
 

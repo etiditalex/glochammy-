@@ -5,6 +5,7 @@ import {
   createMpesaCheckoutAction,
   pollOrderPaymentStatusAction,
 } from "@/app/actions/checkout-mpesa";
+import { CopyOrderIdButton } from "@/components/cart/copy-order-id-button";
 import { useCart } from "@/context/cart-context";
 import { isBrowserSupabaseConfigured } from "@/lib/supabase/env";
 import { ButtonPush } from "@/components/ui/button-push";
@@ -175,10 +176,26 @@ export function CartCheckout({
       <div className="space-y-4" role="status">
         <p className="text-sm font-medium text-ink">Complete payment on your phone</p>
         <p className="text-sm text-muted">{mpesaHint}</p>
-        <p className="text-2xs text-muted">
-          Order reference: <span className="font-mono text-ink">{oid.slice(0, 8)}</span>… — your
-          order is already in our system and will show as paid when M-Pesa confirms.
-        </p>
+        <div className="rounded border border-line bg-subtle p-3 text-left">
+          <p className="text-2xs font-semibold uppercase tracking-nav text-muted">
+            Order ID (save for tracking)
+          </p>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-stretch">
+            {oid ? (
+              <>
+                <code className="min-w-0 flex-1 break-all font-mono text-[11px] leading-relaxed text-ink">
+                  {oid}
+                </code>
+                <CopyOrderIdButton orderId={oid} />
+              </>
+            ) : (
+              <span className="text-2xs text-muted">—</span>
+            )}
+          </div>
+          <p className="mt-2 text-2xs text-muted">
+            Your order is already in our system and will show as paid when M-Pesa confirms.
+          </p>
+        </div>
         {mpesaPhase === "waiting" ? (
           <p className="text-2xs text-muted">
             Waiting for M-Pesa confirmation…{" "}
