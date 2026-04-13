@@ -1,4 +1,5 @@
 import { FadeIn } from "@/components/motion/fade-in";
+import { ProductSpotlightBanner } from "@/components/home/product-spotlight-banner";
 import { ButtonLink } from "@/components/ui/button-link";
 import { BRAND } from "@/lib/constants";
 import type { SalonService } from "@/lib/types/commerce";
@@ -51,6 +52,12 @@ export function SalonPreview({ services }: SalonPreviewProps) {
           </ButtonLink>
         </FadeIn>
       </div>
+      <FadeIn className="mt-14 px-4 sm:mt-16 sm:px-8">
+        <p className="mb-4 text-left text-2xs font-medium uppercase tracking-nav text-muted">
+          From the shop
+        </p>
+        <ProductSpotlightBanner />
+      </FadeIn>
     </section>
   );
 }
