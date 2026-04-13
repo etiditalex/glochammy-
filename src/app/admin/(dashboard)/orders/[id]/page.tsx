@@ -46,6 +46,14 @@ export default async function AdminOrderDetailPage({ params }: Props) {
               ? new Date(order.created_at as string).toLocaleString()
               : ""}
           </p>
+          <p className="mt-4">
+            <Link
+              href={`/admin/orders/${params.id}/invoice`}
+              className="text-2xs font-medium uppercase tracking-nav text-ink underline underline-offset-4 hover:opacity-80"
+            >
+              View &amp; print invoice
+            </Link>
+          </p>
         </div>
         <div className="flex max-w-xs flex-col items-end gap-2 text-right">
           <span className="text-2xs uppercase tracking-nav text-muted">Status</span>

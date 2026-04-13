@@ -54,6 +54,13 @@ export function OrderThankYou({ orderId, kind }: Props) {
           When your products arrive, open each item in the shop to leave a star rating and a short
           review—we read every one.
         </p>
+        <p className="mt-6 text-center text-sm text-muted">
+          Need a receipt?{" "}
+          <Link href="/order-invoice" className="font-medium text-ink underline underline-offset-2">
+            View or print your invoice
+          </Link>{" "}
+          with this order ID and your checkout email.
+        </p>
         <div className="mt-10 flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
           <ButtonLink href="/shop" variant="primary" className="sm:min-w-[11rem]">
             Continue shopping

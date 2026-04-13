@@ -1,5 +1,6 @@
 "use client";
 
+import { AccountOrderInvoiceForm } from "@/components/order-invoice/account-order-invoice-form";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -42,6 +43,22 @@ export function AccountSignedIn({ email, profileName }: Props) {
           <span className="break-all text-ink">{email}</span>.
         </p>
       </div>
+
+      <section
+        className="border-t border-line/50 pt-6"
+        aria-labelledby="invoice-heading"
+      >
+        <h3
+          id="invoice-heading"
+          className="font-sans text-base font-medium text-ink sm:text-lg"
+        >
+          Order invoice
+        </h3>
+        <p className="mt-2 font-sans text-sm leading-relaxed text-ink/85">
+          For orders placed while signed in, enter the order ID to open a printable invoice.
+        </p>
+        <AccountOrderInvoiceForm />
+      </section>
 
       <button
         type="button"

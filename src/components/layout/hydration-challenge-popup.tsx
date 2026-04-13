@@ -74,7 +74,7 @@ export function HydrationChallengePopup() {
       {open ? (
         <motion.div
           key={`hydration-challenge-popup-${pathname}`}
-          className="fixed inset-0 z-[200] flex items-center justify-center px-4 py-8"
+          className="print:hidden fixed inset-0 z-[200] flex items-center justify-center px-4 py-8"
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

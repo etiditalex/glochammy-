@@ -46,6 +46,15 @@ iframe {
 }
 
 @layer utilities {
+  @media print {
+    body {
+      background: #fff;
+    }
+    @page {
+      margin: 1.25cm;
+    }
+  }
+
   .text-balance {
     text-wrap: balance;
   }

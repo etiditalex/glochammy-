@@ -17,6 +17,7 @@ const serviceLinks: { label: string; href: string }[] = [
   { label: "Book a beauty consultation", href: "/booking" },
   { label: "Skin diagnosis", href: "/about-your-skin/skin-diagnosis" },
   { label: "FAQ", href: "/faq" },
+  { label: "Order invoice", href: "/order-invoice" },
   { label: "Track my order", href: "/track-order" },
   { label: "Accessibility", href: "/accessibility" },
 ];
@@ -40,7 +41,7 @@ function columnHeading(text: string) {
 
 export function SiteFooter() {
   return (
-    <footer className="w-full min-w-0 border-t border-accent/35 bg-cream">
+    <footer className="print:hidden w-full min-w-0 border-t border-accent/35 bg-cream">
       <div className="w-full min-w-0 px-4 py-16 sm:px-6 md:px-8 lg:px-10 lg:py-20 xl:px-12 2xl:px-16">
         <div className="grid gap-14 sm:gap-16 lg:grid-cols-12 lg:gap-10 xl:gap-14">
           <FooterNewsletter />

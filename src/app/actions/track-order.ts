@@ -2,6 +2,7 @@
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { normalizeOrderUuid } from "@/lib/order-id";
 
 export type TrackedOrderItem = {
   product_name: string;
@@ -23,15 +24,6 @@ export type TrackOrderLookupResult =
   | { ok: true; order: TrackedOrder }
   | { ok: false; error: string };
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-function normalizeOrderId(raw: string): string | null {
-  const s = raw.trim().replace(/\s+/g, "");
-  if (!UUID_RE.test(s)) return null;
-  return s.toLowerCase();
-}
-
 export async function trackOrderLookupAction(input: {
   orderId: string;
   email: string;
@@ -40,7 +32,7 @@ export async function trackOrderLookupAction(input: {
     return { ok: false, error: "Order lookup is not available right now." };
   }
 
-  const orderId = normalizeOrderId(input.orderId);
+  const orderId = normalizeOrderUuid(input.orderId);
   const email = input.email.trim().toLowerCase();
   if (!orderId) {
     return {

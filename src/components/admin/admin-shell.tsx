@@ -43,7 +43,7 @@ export function AdminShell({ children, userEmail, appVersion }: Props) {
       {sidebarOpen ? (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-ink/40 lg:hidden"
+          className="print:hidden fixed inset-0 z-40 bg-ink/40 lg:hidden"
           aria-label="Close menu"
           onClick={() => setSidebarOpen(false)}
         />
@@ -51,7 +51,7 @@ export function AdminShell({ children, userEmail, appVersion }: Props) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(17rem,88vw)] flex-col border-r border-line bg-ink text-cream transition-transform duration-200 ease-out lg:static lg:translate-x-0 ${
+        className={`print:hidden fixed inset-y-0 left-0 z-50 flex w-[min(17rem,88vw)] flex-col border-r border-line bg-ink text-cream transition-transform duration-200 ease-out lg:static lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
@@ -113,7 +113,7 @@ export function AdminShell({ children, userEmail, appVersion }: Props) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col lg:pl-0">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-line bg-white px-4 py-3 sm:px-6">
+        <header className="print:hidden sticky top-0 z-30 flex items-center justify-between gap-4 border-b border-line bg-white px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <button
               type="button"
@@ -163,7 +163,7 @@ export function AdminShell({ children, userEmail, appVersion }: Props) {
 
         <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">{children}</main>
 
-        <footer className="border-t border-line bg-white px-4 py-3 text-2xs text-muted sm:px-6">
+        <footer className="print:hidden border-t border-line bg-white px-4 py-3 text-2xs text-muted sm:px-6">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <p>
               © {new Date().getFullYear()} {BRAND.shortName}. Admin only — not linked from the

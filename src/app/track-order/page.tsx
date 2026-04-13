@@ -19,7 +19,7 @@ const categoryLinks: { label: string; href: string }[] = [
   { label: "Other order issues", href: "/contact" },
   { label: "Incorrect, damaged & faulty", href: "/contact" },
   { label: "Customs, duties & taxes", href: "/contact" },
-  { label: "Invoices", href: "/contact" },
+  { label: "Invoices", href: "/order-invoice" },
   { label: "Payments", href: "/contact" },
   { label: "Prices & discounts", href: "/faq" },
   { label: "Refunds", href: "/contact" },
