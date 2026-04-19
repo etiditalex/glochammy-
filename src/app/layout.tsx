@@ -30,6 +30,7 @@ export const viewport: Viewport = {
 
 const siteUrl = getSiteUrl();
 
+/** Tab / search icons: `src/app/favicon.ico`, `icon.png`, `apple-icon.png` (App Router metadata files). */
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
@@ -38,10 +39,6 @@ export const metadata: Metadata = {
   },
   description: BRAND.tagline,
   applicationName: BRAND.shortName,
-  icons: {
-    icon: [{ url: BRAND.iconSrc, sizes: "192x192", type: "image/png" }],
-    apple: [{ url: BRAND.appleTouchIconSrc, sizes: "180x180", type: "image/png" }],
-  },
   openGraph: {
     title: BRAND.name,
     description: BRAND.tagline,

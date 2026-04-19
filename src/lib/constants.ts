@@ -9,11 +9,11 @@ export const BRAND = {
   logoSrc:
     "https://res.cloudinary.com/dyfnobo9r/image/upload/f_auto,q_auto,w_600/v1775097905/glochammy_logo-beauty_jt8hxr.png",
   /**
-   * Tab / shortcut icon (square, matches brand logo). Served via `next.config` rewrite from `/icon.png` and `/favicon.ico`.
+   * Same artwork as `src/app/icon.png` / `favicon.ico` (served from the site root for tabs & search).
    */
   iconSrc:
     "https://res.cloudinary.com/dyfnobo9r/image/upload/w_192,h_192,c_pad,b_rgb:faf9f7,f_auto,q_auto/v1775097905/glochammy_logo-beauty_jt8hxr.png",
-  /** Apple touch icon (home screen). */
+  /** Same artwork as `src/app/apple-icon.png`. */
   appleTouchIconSrc:
     "https://res.cloudinary.com/dyfnobo9r/image/upload/w_180,h_180,c_pad,b_rgb:faf9f7,f_auto,q_auto/v1775097905/glochammy_logo-beauty_jt8hxr.png",
   /** Default Open Graph / Twitter card when sharing the homepage or pages without their own image. */
