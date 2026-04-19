@@ -1,10 +1,18 @@
+import { ADMIN_USER_EMAIL_HEADER } from "@/lib/supabase/admin-request-email";
 import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+function copyResponseCookies(from: NextResponse, to: NextResponse) {
+  from.cookies.getAll().forEach((c) => {
+    to.cookies.set(c.name, c.value, c);
+  });
+}
+
 export async function middleware(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
   let supabaseResponse = NextResponse.next({
-    request,
+    request: { headers: requestHeaders },
   });
 
   const url = getSupabaseUrl();
@@ -22,7 +30,7 @@ export async function middleware(request: NextRequest) {
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
         supabaseResponse = NextResponse.next({
-          request,
+          request: { headers: requestHeaders },
         });
         cookiesToSet.forEach(({ name, value, options }) =>
           supabaseResponse.cookies.set(name, value, options),
@@ -63,6 +71,13 @@ export async function middleware(request: NextRequest) {
     if (profile?.role !== "admin") {
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
+
+    requestHeaders.set(ADMIN_USER_EMAIL_HEADER, user.email ?? "");
+    const res = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    copyResponseCookies(supabaseResponse, res);
+    return res;
   }
 
   return supabaseResponse;

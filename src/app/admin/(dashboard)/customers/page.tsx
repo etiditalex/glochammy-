@@ -9,9 +9,10 @@ export default async function AdminCustomersPage() {
   const { data: rows } = await supabase
     .from("profiles")
     .select("id, email, full_name, avatar_url, role, created_at")
+    .eq("role", "customer")
     .order("created_at", { ascending: false });
 
-  const customers = (rows ?? []).filter((r) => r.role === "customer");
+  const customers = rows ?? [];
 
   return (
     <div className="space-y-8">
