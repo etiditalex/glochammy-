@@ -163,7 +163,6 @@ export function CartCheckout({
       return;
     }
 
-    clear();
     setMpesaHint(result.customerMessage);
     setPollOrderId(result.orderId);
     setPollNonce(result.nonce);
