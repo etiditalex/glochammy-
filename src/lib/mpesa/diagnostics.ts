@@ -173,8 +173,22 @@ export async function runMpesaDiagnostics(): Promise<MpesaDiagnosticsReport> {
   ] as const) {
     try {
       const res = await fetchWithTimeout(url, { method: "OPTIONS" });
-      if (res.status >= 200 && res.status < 500) {
-        checks.push(pass(id, label, `Reachable (${res.status}).`));
+      if (res.status === 404) {
+        checks.push(
+          fail(
+            id,
+            label,
+            `Returned 404. Verify MPESA_BASE_URL / custom endpoint URL and environment (sandbox vs live).`,
+          ),
+        );
+      } else if (res.status >= 200 && res.status < 500) {
+        checks.push(
+          pass(
+            id,
+            label,
+            `Reachable (${res.status}). Endpoint is responding (OPTIONS may still be method-limited).`,
+          ),
+        );
       } else {
         checks.push(warn(id, label, `Unexpected HTTP ${res.status}.`));
       }
