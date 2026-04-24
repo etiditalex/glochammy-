@@ -1,7 +1,9 @@
 "use server";
 
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { getSupabaseServiceRoleKey } from "@/lib/supabase/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServiceSupabaseClient } from "@/lib/supabase/server-service";
 import { initiateMpesaStkPush } from "@/lib/mpesa/stk-flow";
 import { queryStkPushStatus } from "@/lib/mpesa/daraja";
 import { revalidatePath } from "next/cache";
@@ -190,12 +192,31 @@ export async function pollOrderPaymentStatusAction(input: {
 
   let resultCode: number | null = null;
   let resultDesc: string | null = null;
+  let paid = Boolean(row.paid);
+  let status = row.status ?? null;
   if (!row.paid && row.status === "pending" && row.mpesa_checkout_request_id) {
     try {
       const qr = await queryStkPushStatus(row.mpesa_checkout_request_id);
-      if (qr.ok && Number.isFinite(qr.resultCode) && qr.resultCode !== 0) {
+      if (qr.ok && Number.isFinite(qr.resultCode)) {
         resultCode = qr.resultCode;
         resultDesc = qr.resultDesc;
+        // Fallback reconciliation: if Daraja query confirms success but callback is delayed/missed,
+        // mark order as paid so admin and customer see accurate status.
+        if (qr.resultCode === 0 && getSupabaseServiceRoleKey()) {
+          const service = createServiceSupabaseClient();
+          const { error: reconcileError } = await service
+            .from("orders")
+            .update({ status: "paid" })
+            .eq("id", input.orderId)
+            .eq("mpesa_checkout_nonce", input.nonce)
+            .eq("status", "pending");
+          if (reconcileError) {
+            console.error("reconcilePaidStatus", reconcileError);
+          } else {
+            paid = true;
+            status = "paid";
+          }
+        }
       }
     } catch (error) {
       console.error("queryStkPushStatus", error);
@@ -204,8 +225,8 @@ export async function pollOrderPaymentStatusAction(input: {
 
   return {
     ok: true,
-    paid: Boolean(row.paid),
-    status: row.status ?? null,
+    paid,
+    status,
     mpesaReceipt: row.mpesa_receipt ?? null,
     resultCode,
     resultDesc,
