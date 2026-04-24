@@ -143,16 +143,29 @@ export function CartCheckout({
         return;
       }
 
-      if (pr.status === "cancelled" || pr.status === "failed" || (pr.resultCode ?? 0) !== 0) {
+      const resultCode = pr.resultCode ?? null;
+      if (resultCode === 4999) {
+        setMpesaPhase("timed_out");
+        setError(null);
+        setMpesaHint("Payment processing. Waiting for M-Pesa confirmation...");
+        return;
+      }
+
+      if (pr.status === "cancelled" || resultCode === 1032) {
         setMpesaPhase("failed");
-        const codePart = pr.resultCode != null ? ` (code ${pr.resultCode})` : "";
-        setError(
-          pr.resultDesc
-            ? `M-Pesa did not complete${codePart}: ${pr.resultDesc}. Confirm your phone number and try again.`
-            : `M-Pesa did not complete${codePart}. Confirm your phone number and try again.`,
-        );
-        setMpesaHint(null);
+        setError("Payment canceled.");
         clearPendingMpesaCheckout();
+        setMpesaHint(null);
+        setPollOrderId(null);
+        setPollNonce(null);
+        return;
+      }
+
+      if (pr.status === "failed" || (resultCode ?? 0) !== 0) {
+        setMpesaPhase("failed");
+        setError("Payment canceled or failed. Please try again.");
+        clearPendingMpesaCheckout();
+        setMpesaHint(null);
         setPollOrderId(null);
         setPollNonce(null);
       }
@@ -284,31 +297,29 @@ export function CartCheckout({
     return (
       <div className="space-y-4" role="status">
         <p className="text-sm font-medium text-ink">
-          {mpesaPhase === "failed" ? "Payment not completed" : "Complete payment on your phone"}
+          {mpesaPhase === "timed_out" ? "Payment processing" : "Complete payment on your phone"}
         </p>
-        {mpesaPhase !== "failed" && mpesaHint ? <p className="text-sm text-muted">{mpesaHint}</p> : null}
-        {mpesaPhase !== "failed" ? (
-          <div className="rounded border border-line bg-subtle p-3 text-left">
-            <p className="text-2xs font-semibold uppercase tracking-nav text-muted">
-              Order ID (save for tracking)
-            </p>
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-stretch">
-              {oid ? (
-                <>
-                  <code className="min-w-0 flex-1 break-all font-mono text-[11px] leading-relaxed text-ink">
-                    {oid}
-                  </code>
-                  <CopyOrderIdButton orderId={oid} />
-                </>
-              ) : (
-                <span className="text-2xs text-muted">—</span>
-              )}
-            </div>
-            <p className="mt-2 text-2xs text-muted">
-              Your order is already in our system and will show as paid when M-Pesa confirms.
-            </p>
+        <p className="text-sm text-muted">{mpesaHint}</p>
+        <div className="rounded border border-line bg-subtle p-3 text-left">
+          <p className="text-2xs font-semibold uppercase tracking-nav text-muted">
+            Order ID (save for tracking)
+          </p>
+          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-stretch">
+            {oid ? (
+              <>
+                <code className="min-w-0 flex-1 break-all font-mono text-[11px] leading-relaxed text-ink">
+                  {oid}
+                </code>
+                <CopyOrderIdButton orderId={oid} />
+              </>
+            ) : (
+              <span className="text-2xs text-muted">—</span>
+            )}
           </div>
-        ) : null}
+          <p className="mt-2 text-2xs text-muted">
+            Your order is already in our system and will show as paid when M-Pesa confirms.
+          </p>
+        </div>
         {mpesaPhase === "waiting" ? (
           <p className="text-2xs text-muted">
             Waiting for M-Pesa confirmation…{" "}
@@ -328,10 +339,9 @@ export function CartCheckout({
         ) : (
           <div className="space-y-3">
             <p className="text-2xs text-muted">
-              This is taking longer than usual. If you already entered your PIN, payment can still
-              complete in the background. Keep this page open while we continue checking Safaricom status.
-              We will automatically switch this screen to successful or failed as soon as we get a final
-              response
+              Payment processing. If you already entered your PIN, keep this page open while we continue
+              checking Safaricom status. We will automatically switch this screen to successful or failed
+              as soon as we get a final response
               {mpesaAutoComplete
                 ? ""
                 : " (after you add SUPABASE_SERVICE_ROLE_KEY for auto-updates)"}
