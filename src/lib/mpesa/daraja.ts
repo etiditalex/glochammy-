@@ -6,6 +6,7 @@ import {
   getMpesaPartyB,
   getMpesaPasskey,
   getMpesaShortcode,
+  getMpesaStkPushQueryUrl,
   getMpesaStkPushUrl,
   getMpesaTransactionType,
   getMpesaCallbackUrl,
@@ -54,6 +55,16 @@ async function fetchAccessToken(): Promise<string> {
   const json = (await res.json()) as { access_token?: string };
   if (!json.access_token) throw new Error("Daraja OAuth: no access_token");
   return json.access_token;
+}
+
+async function readJsonSafe(res: Response): Promise<Record<string, unknown>> {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    return { raw: text };
+  }
 }
 
 export type StkInitResult =
@@ -123,19 +134,24 @@ export async function initiateStkPush(input: {
     next: { revalidate: 0 },
   });
 
-  const json = (await res.json()) as {
+  const json = (await readJsonSafe(res)) as {
     MerchantRequestID?: string;
     CheckoutRequestID?: string;
     ResponseCode?: string;
     ResponseDescription?: string;
     CustomerMessage?: string;
     errorMessage?: string;
+    errorCode?: string;
+    requestId?: string;
   };
 
   if (!res.ok) {
     return {
       ok: false,
-      error: json.errorMessage ?? json.ResponseDescription ?? `HTTP ${res.status}`,
+      error:
+        json.errorMessage ??
+        json.ResponseDescription ??
+        (json.raw ? String(json.raw) : `HTTP ${res.status}`),
     };
   }
 
@@ -157,4 +173,68 @@ export async function initiateStkPush(input: {
     checkoutRequestId: json.CheckoutRequestID,
     customerMessage: json.CustomerMessage ?? "Check your phone to approve payment.",
   };
+}
+
+export type StkQueryResult =
+  | { ok: true; resultCode: number; resultDesc: string | null }
+  | { ok: false; error: string };
+
+export async function queryStkPushStatus(checkoutRequestId: string): Promise<StkQueryResult> {
+  const shortcode = getMpesaShortcode();
+  const passkey = getMpesaPasskey();
+  if (!shortcode || !passkey) {
+    return { ok: false, error: "M-Pesa shortcode/passkey missing." };
+  }
+  if (!checkoutRequestId.trim()) {
+    return { ok: false, error: "Checkout request ID is missing." };
+  }
+
+  const businessCode = Number.parseInt(shortcode, 10);
+  if (!Number.isFinite(businessCode)) {
+    return { ok: false, error: "MPESA_SHORTCODE must be numeric." };
+  }
+
+  const timestamp = darajaTimestampNairobi();
+  const password = stkPassword(shortcode, passkey, timestamp);
+  const token = await fetchAccessToken();
+
+  const res = await fetch(getMpesaStkPushQueryUrl(), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      BusinessShortCode: businessCode,
+      Password: password,
+      Timestamp: timestamp,
+      CheckoutRequestID: checkoutRequestId.trim(),
+    }),
+    next: { revalidate: 0 },
+  });
+
+  const json = (await readJsonSafe(res)) as {
+    ResultCode?: string | number;
+    ResultDesc?: string;
+    errorMessage?: string;
+    ResponseDescription?: string;
+    raw?: string;
+  };
+
+  if (!res.ok) {
+    return {
+      ok: false,
+      error:
+        json.errorMessage ??
+        json.ResponseDescription ??
+        (json.raw ? String(json.raw) : `HTTP ${res.status}`),
+    };
+  }
+
+  const parsedCode = Number(json.ResultCode);
+  if (!Number.isFinite(parsedCode)) {
+    return { ok: false, error: json.ResultDesc ?? "Invalid STK query response from Daraja." };
+  }
+
+  return { ok: true, resultCode: parsedCode, resultDesc: json.ResultDesc ?? null };
 }

@@ -127,7 +127,10 @@ export function CartCheckout({
         nonce: pollNonce,
       });
       if (cancelled || paid) return;
-      if (!pr.ok) return;
+      if (!pr.ok) {
+        setError(pr.error);
+        return;
+      }
       if (pr.paid) {
         paid = true;
         setMpesaPhase("idle");
@@ -137,6 +140,20 @@ export function CartCheckout({
         clearPendingMpesaCheckout();
         onPlacedOrderAction?.({ orderId: pollOrderId, kind: "mpesa" });
         clear();
+        return;
+      }
+
+      if (pr.status === "cancelled" || pr.status === "failed" || (pr.resultCode ?? 0) !== 0) {
+        setMpesaPhase("timed_out");
+        const codePart = pr.resultCode != null ? ` (code ${pr.resultCode})` : "";
+        setError(
+          pr.resultDesc
+            ? `M-Pesa did not complete${codePart}: ${pr.resultDesc}. Confirm your phone number and try again.`
+            : `M-Pesa did not complete${codePart}. Confirm your phone number and try again.`,
+        );
+        clearPendingMpesaCheckout();
+        setPollOrderId(null);
+        setPollNonce(null);
       }
     };
 
@@ -298,8 +315,9 @@ export function CartCheckout({
               complete in the background. Keep this page open or check your email; the admin dashboard
               will update when Safaricom confirms
               {mpesaAutoComplete
-                ? "."
-                : " (after you add SUPABASE_SERVICE_ROLE_KEY for auto-updates)."}
+                ? ""
+                : " (after you add SUPABASE_SERVICE_ROLE_KEY for auto-updates)"}
+              .
             </p>
             <ButtonPush type="button" variant="secondary" className="w-full" onClick={resetPendingMpesaState}>
               Start a new checkout

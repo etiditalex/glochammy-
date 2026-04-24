@@ -3,6 +3,7 @@
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { initiateMpesaStkPush } from "@/lib/mpesa/stk-flow";
+import { queryStkPushStatus } from "@/lib/mpesa/daraja";
 import { revalidatePath } from "next/cache";
 import { parseCreateStorefrontOrderResult, type CheckoutLine } from "@/app/actions/checkout-shared";
 
@@ -89,9 +90,11 @@ export async function createMpesaCheckoutAction(input: {
     });
   } catch (error) {
     console.error("initiateMpesaStkPush", error);
+    const message = error instanceof Error && error.message.trim() ? error.message.trim() : null;
     return {
       ok: false,
       error:
+        message ??
         "Could not start M-Pesa prompt right now. Confirm your Daraja credentials and try again.",
     };
   }
@@ -142,7 +145,14 @@ export async function createMpesaCheckoutAction(input: {
 }
 
 export type OrderPollResult =
-  | { ok: true; paid: boolean; status: string | null; mpesaReceipt: string | null }
+  | {
+      ok: true;
+      paid: boolean;
+      status: string | null;
+      mpesaReceipt: string | null;
+      resultCode?: number | null;
+      resultDesc?: string | null;
+    }
   | { ok: false; error: string };
 
 export async function pollOrderPaymentStatusAction(input: {
@@ -171,12 +181,29 @@ export async function pollOrderPaymentStatusAction(input: {
     paid?: boolean;
     status?: string;
     mpesa_receipt?: string | null;
+    mpesa_checkout_request_id?: string | null;
   };
+
+  let resultCode: number | null = null;
+  let resultDesc: string | null = null;
+  if (!row.paid && row.status === "pending" && row.mpesa_checkout_request_id) {
+    try {
+      const qr = await queryStkPushStatus(row.mpesa_checkout_request_id);
+      if (qr.ok && Number.isFinite(qr.resultCode) && qr.resultCode !== 0) {
+        resultCode = qr.resultCode;
+        resultDesc = qr.resultDesc;
+      }
+    } catch (error) {
+      console.error("queryStkPushStatus", error);
+    }
+  }
 
   return {
     ok: true,
     paid: Boolean(row.paid),
     status: row.status ?? null,
     mpesaReceipt: row.mpesa_receipt ?? null,
+    resultCode,
+    resultDesc,
   };
 }
