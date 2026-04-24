@@ -20,6 +20,7 @@ type ProductRow = {
   currency: string;
   category: string;
   images: string[] | null;
+  stock_quantity: number | null;
   featured: boolean | null;
 };
 
@@ -34,6 +35,7 @@ function rowToProduct(row: ProductRow): Product {
     currency: row.currency,
     category: row.category,
     images: row.images?.length ? row.images : [FALLBACK_PRODUCT_IMAGE_URL],
+    stockQuantity: Math.max(0, Number(row.stock_quantity ?? 0)),
     featured: row.featured ?? false,
   };
 }

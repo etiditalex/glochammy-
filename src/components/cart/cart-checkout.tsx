@@ -207,6 +207,22 @@ export function CartCheckout({
       );
       return;
     }
+    const stockIssues = linesToSend
+      .map((line) => {
+        const product = catalog.find((p) => p.id === line.productId);
+        if (!product) return null;
+        const available = Math.max(0, product.stockQuantity ?? 0);
+        if (available <= 0) return `${product.name} is out of stock`;
+        if (line.quantity > available) {
+          return `${product.name} has only ${available} left`;
+        }
+        return null;
+      })
+      .filter((v): v is string => Boolean(v));
+    if (stockIssues.length) {
+      setError(stockIssues.join(". "));
+      return;
+    }
 
     setPending(true);
     const result = await createOrderAction({
@@ -260,6 +276,22 @@ export function CartCheckout({
       setError(
         "Your bag only contains items that are not in the live catalog. Remove them and add products from the shop.",
       );
+      return;
+    }
+    const stockIssues = linesToSend
+      .map((line) => {
+        const product = catalog.find((p) => p.id === line.productId);
+        if (!product) return null;
+        const available = Math.max(0, product.stockQuantity ?? 0);
+        if (available <= 0) return `${product.name} is out of stock`;
+        if (line.quantity > available) {
+          return `${product.name} has only ${available} left`;
+        }
+        return null;
+      })
+      .filter((v): v is string => Boolean(v));
+    if (stockIssues.length) {
+      setError(stockIssues.join(". "));
       return;
     }
 

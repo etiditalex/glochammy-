@@ -25,6 +25,8 @@ export function ProductCard({
   const reduce = useReducedMotion();
   const cover = product.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL;
   const frame = flush ? "" : "border border-line";
+  const availableStock = Math.max(0, product.stockQuantity ?? 0);
+  const isOutOfStock = availableStock <= 0;
 
   const article = (
     <article className={`group flex h-full flex-col bg-white ${frame}`}>
@@ -59,17 +61,21 @@ export function ProductCard({
         </div>
       </Link>
       <div className="mt-auto flex flex-col gap-3 border-t border-line px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="hidden text-sm font-medium text-ink sm:block">
-          {formatMoney(product.priceCents, product.currency)}
-        </p>
+        <div>
+          <p className="hidden text-sm font-medium text-ink sm:block">
+            {formatMoney(product.priceCents, product.currency)}
+          </p>
+          <p className="text-2xs text-muted">{isOutOfStock ? "Out of stock" : `${availableStock} in stock`}</p>
+        </div>
         <ButtonPush
           type="button"
           variant="primary"
           onClick={() => addItem(product.id, 1)}
+          disabled={isOutOfStock}
           className="w-full whitespace-nowrap px-3 py-2.5 text-xs leading-tight sm:min-h-[48px] sm:min-w-[140px] sm:whitespace-normal sm:px-6 sm:py-3 sm:text-sm sm:leading-normal"
           aria-label={`Add ${product.name} to bag`}
         >
-          Add to bag
+          {isOutOfStock ? "Out of stock" : "Add to bag"}
         </ButtonPush>
       </div>
     </article>

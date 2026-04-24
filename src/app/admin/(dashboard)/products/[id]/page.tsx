@@ -23,6 +23,7 @@ export default async function AdminEditProductPage({ params }: Props) {
     currency: row.currency as string,
     category: String(row.category ?? ""),
     images: (row.images as string[]) ?? [],
+    stock_quantity: Number(row.stock_quantity ?? 0),
     featured: Boolean(row.featured),
   };
 

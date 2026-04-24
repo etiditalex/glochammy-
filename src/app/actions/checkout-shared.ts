@@ -51,6 +51,12 @@ export function mapCreateStorefrontOrderError(message: string | undefined): stri
   if (m.includes("invalid quantity")) {
     return "One or more line items have an invalid quantity.";
   }
+  if (m.includes("out of stock")) {
+    return "One or more items are out of stock. Update your bag and try again.";
+  }
+  if (m.includes("insufficient stock")) {
+    return "Some items no longer have enough stock for your selected quantity.";
+  }
   if (m.includes("no items")) return "Your bag is empty.";
   if (m.includes("email required") || m.includes("name required")) {
     return "Enter your name and email.";

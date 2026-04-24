@@ -74,6 +74,18 @@ function parsePriceToCents(formData: FormData): { ok: true; price_cents: number 
   return { ok: true, price_cents: Math.round(major * 100) };
 }
 
+function parseStockQuantity(
+  formData: FormData,
+): { ok: true; stock_quantity: number } | { ok: false; error: string } {
+  const raw = String(formData.get("stockQuantity") ?? "").trim();
+  if (raw === "") return { ok: false, error: "Enter stock quantity." };
+  const qty = Number.parseInt(raw, 10);
+  if (!Number.isFinite(qty) || qty < 0) {
+    return { ok: false, error: "Stock quantity must be a whole number (0 or greater)." };
+  }
+  return { ok: true, stock_quantity: qty };
+}
+
 function mapProductError(err: { message: string; code?: string }): string {
   if (err.code === "23505") return "That URL slug is already used. Change the slug.";
   return err.message;
@@ -90,6 +102,8 @@ export async function createProductAction(formData: FormData): Promise<AdminActi
   const longDescription = String(formData.get("longDescription") ?? "").trim();
   const price = parsePriceToCents(formData);
   if (!price.ok) return price;
+  const stock = parseStockQuantity(formData);
+  if (!stock.ok) return stock;
   const currency = String(formData.get("currency") ?? "KES").trim() || "KES";
   const categoryRes = await resolveCategorySlug(
     supabase,
@@ -111,6 +125,7 @@ export async function createProductAction(formData: FormData): Promise<AdminActi
     description,
     long_description: longFinal,
     price_cents: price.price_cents,
+    stock_quantity: stock.stock_quantity,
     currency,
     category: categoryRes.slug,
     images,
@@ -178,6 +193,8 @@ export async function updateProductAction(
   const longDescription = String(formData.get("longDescription") ?? "").trim();
   const price = parsePriceToCents(formData);
   if (!price.ok) return price;
+  const stock = parseStockQuantity(formData);
+  if (!stock.ok) return stock;
   const currency = String(formData.get("currency") ?? "KES").trim() || "KES";
   const categoryRes = await resolveCategorySlug(
     supabase,
@@ -201,6 +218,7 @@ export async function updateProductAction(
       description,
       long_description: longFinal,
       price_cents: price.price_cents,
+      stock_quantity: stock.stock_quantity,
       currency,
       category: categoryRes.slug,
       images,

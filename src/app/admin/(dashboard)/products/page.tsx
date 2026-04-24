@@ -9,7 +9,7 @@ export default async function AdminProductsPage() {
   const supabase = createServerSupabaseClient();
   const { data: rows } = await supabase
     .from("products")
-    .select("id, slug, name, price_cents, currency, featured")
+    .select("id, slug, name, price_cents, currency, stock_quantity, featured")
     .order("sort_order", { ascending: true });
 
   return (
@@ -31,6 +31,7 @@ export default async function AdminProductsPage() {
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Slug</th>
               <th className="px-4 py-3 font-medium">Price</th>
+              <th className="px-4 py-3 font-medium">Stock</th>
               <th className="px-4 py-3 font-medium">Featured</th>
               <th className="px-4 py-3 font-medium"></th>
             </tr>
@@ -42,6 +43,9 @@ export default async function AdminProductsPage() {
                 <td className="px-4 py-3 text-muted">{p.slug}</td>
                 <td className="px-4 py-3 tabular-nums">
                   {formatMoney(p.price_cents, p.currency)}
+                </td>
+                <td className="px-4 py-3 tabular-nums">
+                  {Number(p.stock_quantity ?? 0)}
                 </td>
                 <td className="px-4 py-3">{p.featured ? "Yes" : "—"}</td>
                 <td className="px-4 py-3 text-right">

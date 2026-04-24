@@ -5,7 +5,11 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { initiateMpesaStkPush } from "@/lib/mpesa/stk-flow";
 import { queryStkPushStatus } from "@/lib/mpesa/daraja";
 import { revalidatePath } from "next/cache";
-import { parseCreateStorefrontOrderResult, type CheckoutLine } from "@/app/actions/checkout-shared";
+import {
+  mapCreateStorefrontOrderError,
+  parseCreateStorefrontOrderResult,
+  type CheckoutLine,
+} from "@/app/actions/checkout-shared";
 
 export type MpesaCheckoutResult =
   | {
@@ -65,7 +69,7 @@ export async function createMpesaCheckoutAction(input: {
     console.error("createMpesaCheckout", orderError, raw);
     return {
       ok: false,
-      error: orderError?.message ?? "Could not create order. Run the latest Supabase migrations.",
+      error: mapCreateStorefrontOrderError(orderError?.message),
     };
   }
 

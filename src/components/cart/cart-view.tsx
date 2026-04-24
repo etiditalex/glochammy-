@@ -85,7 +85,9 @@ export function CartView({
   return (
     <div className="grid min-w-0 gap-10 lg:grid-cols-[1fr_320px] lg:items-start">
       <ul className="space-y-6">
-        {rows.map(({ line, product }) => (
+        {rows.map(({ line, product }) => {
+          const availableStock = Math.max(0, product.stockQuantity ?? 0);
+          return (
           <li
             key={product.id}
             className="flex gap-4 border border-line bg-white p-4 sm:gap-6 sm:p-6"
@@ -114,6 +116,11 @@ export function CartView({
                   <p className="mt-1 text-sm text-muted">
                     {formatMoney(product.priceCents, product.currency)} each
                   </p>
+                  <p className="mt-1 text-2xs text-muted">
+                    {availableStock > 0
+                      ? `${availableStock} in stock`
+                      : "Out of stock"}
+                  </p>
                 </div>
                 <p className="text-sm font-medium text-ink sm:text-right">
                   {formatMoney(
@@ -139,6 +146,7 @@ export function CartView({
                 <button
                   type="button"
                   onClick={() => setQuantity(product.id, line.quantity + 1)}
+                  disabled={line.quantity >= availableStock}
                   className="flex min-h-[44px] min-w-[44px] items-center justify-center text-ink transition-colors hover:bg-subtle"
                   aria-label="Increase quantity"
                 >
@@ -153,9 +161,19 @@ export function CartView({
                   <Trash2 className="h-4 w-4" strokeWidth={1.25} />
                 </button>
               </div>
+              {availableStock <= 0 ? (
+                <p className="mt-2 text-2xs text-red-700">
+                  This item is now out of stock. Remove it before checkout.
+                </p>
+              ) : line.quantity > availableStock ? (
+                <p className="mt-2 text-2xs text-red-700">
+                  Available quantity changed to {availableStock}. Reduce quantity to continue.
+                </p>
+              ) : null}
             </div>
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       <aside className="border border-line bg-cream p-6">

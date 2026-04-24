@@ -21,6 +21,7 @@ type ProductRow = {
   currency: string;
   category: string;
   images: string[];
+  stock_quantity: number;
   featured: boolean;
 };
 
@@ -204,6 +205,25 @@ export function ProductForm({
           <p className="mt-1.5 text-2xs leading-relaxed text-muted">
             Enter the normal price (e.g. <span className="text-ink">1500</span> for{" "}
             {formatMoney(150000, initial?.currency ?? "KES")}), not cents.
+          </p>
+        </div>
+        <div>
+          <label htmlFor="stockQuantity" className={label}>
+            Stock quantity
+          </label>
+          <input
+            id="stockQuantity"
+            name="stockQuantity"
+            type="number"
+            required
+            min={0}
+            step="1"
+            inputMode="numeric"
+            defaultValue={initial?.stock_quantity ?? 0}
+            className={field}
+          />
+          <p className="mt-1.5 text-2xs leading-relaxed text-muted">
+            Set how many units are available for sale. Use <span className="text-ink">0</span> for out of stock.
           </p>
         </div>
         <div>

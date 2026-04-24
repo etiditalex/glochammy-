@@ -11,6 +11,7 @@ export type Product = {
   currency: string;
   category: ProductCategory;
   images: string[];
+  stockQuantity?: number;
   featured?: boolean;
 };
 

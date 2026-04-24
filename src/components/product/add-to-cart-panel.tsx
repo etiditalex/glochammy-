@@ -14,13 +14,16 @@ type AddToCartPanelProps = {
 export function AddToCartPanel({ product }: AddToCartPanelProps) {
   const { addItem, lines, setQuantity } = useCart();
   const [qty, setQty] = useState(1);
+  const available = Math.max(0, product.stockQuantity ?? 0);
+  const isOutOfStock = available <= 0;
 
   const inCart = useMemo(() => {
     return lines.find((l) => l.productId === product.id)?.quantity ?? 0;
   }, [lines, product.id]);
+  const maxAddable = Math.max(0, available - inCart);
 
   function increment() {
-    setQty((q) => Math.min(12, q + 1));
+    setQty((q) => Math.min(Math.min(12, maxAddable || 1), q + 1));
   }
 
   function decrement() {
@@ -48,6 +51,7 @@ export function AddToCartPanel({ product }: AddToCartPanelProps) {
           <button
             type="button"
             onClick={increment}
+            disabled={isOutOfStock || qty >= Math.min(12, maxAddable || 1)}
             className="flex min-h-[48px] min-w-[48px] items-center justify-center text-ink transition-colors hover:bg-subtle"
             aria-label="Increase quantity"
           >
@@ -56,12 +60,16 @@ export function AddToCartPanel({ product }: AddToCartPanelProps) {
         </div>
         <ButtonPush
           type="button"
-          onClick={() => addItem(product.id, qty)}
+          onClick={() => addItem(product.id, Math.min(qty, maxAddable))}
           className="sm:min-w-[200px]"
+          disabled={isOutOfStock || maxAddable <= 0}
         >
-          Add to bag
+          {isOutOfStock ? "Out of stock" : maxAddable <= 0 ? "Max in bag" : "Add to bag"}
         </ButtonPush>
       </div>
+      <p className="mt-3 text-2xs text-muted">
+        {isOutOfStock ? "Currently out of stock." : `${available} item(s) available.`}
+      </p>
       {inCart > 0 ? (
         <p className="mt-4 text-sm text-muted" role="status">
           {inCart} in your bag.
