@@ -1,4 +1,5 @@
 import { OrderStatusPicker } from "@/components/admin/order-status-picker";
+import { OrdersAutoRefresh } from "@/components/admin/orders-auto-refresh";
 import { formatMoney } from "@/lib/format";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { OrderStatus } from "@/app/actions/admin";
@@ -29,6 +30,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
+      <OrdersAutoRefresh orderId={params.id} />
       <nav className="text-2xs uppercase tracking-nav text-muted">
         <Link href="/admin/orders" className="hover:text-ink">
           Orders

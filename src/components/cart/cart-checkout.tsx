@@ -311,26 +311,28 @@ export function CartCheckout({
         </p>
         <p className="text-2xs uppercase tracking-nav text-muted">Transaction status: {txStatusLabel}</p>
         {mpesaPhase !== "failed" && mpesaHint ? <p className="text-sm text-muted">{mpesaHint}</p> : null}
-        <div className="rounded border border-line bg-subtle p-3 text-left">
-          <p className="text-2xs font-semibold uppercase tracking-nav text-muted">
-            Order ID (save for tracking)
-          </p>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-stretch">
-            {oid ? (
-              <>
-                <code className="min-w-0 flex-1 break-all font-mono text-[11px] leading-relaxed text-ink">
-                  {oid}
-                </code>
-                <CopyOrderIdButton orderId={oid} />
-              </>
-            ) : (
-              <span className="text-2xs text-muted">—</span>
-            )}
+        {mpesaPhase !== "failed" ? (
+          <div className="rounded border border-line bg-subtle p-3 text-left">
+            <p className="text-2xs font-semibold uppercase tracking-nav text-muted">
+              Order ID (save for tracking)
+            </p>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-stretch">
+              {oid ? (
+                <>
+                  <code className="min-w-0 flex-1 break-all font-mono text-[11px] leading-relaxed text-ink">
+                    {oid}
+                  </code>
+                  <CopyOrderIdButton orderId={oid} />
+                </>
+              ) : (
+                <span className="text-2xs text-muted">—</span>
+              )}
+            </div>
+            <p className="mt-2 text-2xs text-muted">
+              Your order is already in our system and will show as paid when M-Pesa confirms.
+            </p>
           </div>
-          <p className="mt-2 text-2xs text-muted">
-            Your order is already in our system and will show as paid when M-Pesa confirms.
-          </p>
-        </div>
+        ) : null}
         {mpesaPhase === "waiting" ? (
           <p className="text-2xs text-muted">
             Waiting for M-Pesa confirmation…{" "}
@@ -347,22 +349,7 @@ export function CartCheckout({
               Try checkout again
             </ButtonPush>
           </div>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-2xs text-muted">
-              Payment processing. If you already entered your PIN, keep this page open while we continue
-              checking Safaricom status. We will automatically switch this screen to successful or failed
-              as soon as we get a final response
-              {mpesaAutoComplete
-                ? ""
-                : " (after you add SUPABASE_SERVICE_ROLE_KEY for auto-updates)"}
-              .
-            </p>
-            <ButtonPush type="button" variant="secondary" className="w-full" onClick={resetPendingMpesaState}>
-              Start a new checkout
-            </ButtonPush>
-          </div>
-        )}
+        ) : null}
       </div>
     );
   }

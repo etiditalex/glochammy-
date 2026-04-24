@@ -1,4 +1,5 @@
 import type { OrderStatus } from "@/app/actions/admin";
+import { OrdersAutoRefresh } from "@/components/admin/orders-auto-refresh";
 import { OrderStatusPicker } from "@/components/admin/order-status-picker";
 import { formatMoney } from "@/lib/format";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -16,6 +17,7 @@ export default async function AdminOrdersPage() {
 
   return (
     <div className="space-y-8">
+      <OrdersAutoRefresh />
       <div>
         <h1 className="font-display text-3xl text-ink">Order list</h1>
         <p className="mt-2 text-sm text-muted">
