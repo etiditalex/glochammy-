@@ -71,6 +71,13 @@ export function getMpesaAccountBalanceUrl(): string {
 }
 
 export function getMpesaOAuthUrl(): string {
+  const explicit = process.env.MPESA_OAUTH_URL?.trim();
+  if (explicit) {
+    // Safaricom proxy links sometimes already include grant_type; append only when missing.
+    return explicit.includes("grant_type=")
+      ? explicit
+      : `${explicit}${explicit.includes("?") ? "&" : "?"}grant_type=client_credentials`;
+  }
   return `${getMpesaBaseUrl()}/oauth/v1/generate?grant_type=client_credentials`;
 }
 
@@ -90,10 +97,10 @@ export function getMpesaCallbackUrl(): string | undefined {
   if (explicit) return explicit;
 
   const site = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (site) return `${site.replace(/\/+$/, "")}/api/mpesa/stk-callback`;
+  if (site) return `${site.replace(/\/+$/, "")}/api/daraja/callback`;
 
   const vercelUrl = process.env.VERCEL_URL?.trim();
-  if (vercelUrl) return `https://${vercelUrl.replace(/\/+$/, "")}/api/mpesa/stk-callback`;
+  if (vercelUrl) return `https://${vercelUrl.replace(/\/+$/, "")}/api/daraja/callback`;
 
   return undefined;
 }
