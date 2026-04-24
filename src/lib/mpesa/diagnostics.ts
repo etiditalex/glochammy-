@@ -27,6 +27,12 @@ export type MpesaDiagnosticCheck = {
 export type MpesaDiagnosticsReport = {
   checkedAtIso: string;
   checks: MpesaDiagnosticCheck[];
+  resolvedUrls: {
+    oauth: string;
+    stkPush: string;
+    stkQuery: string;
+    callback: string | null;
+  };
 };
 
 async function fetchWithTimeout(url: string, init?: RequestInit): Promise<Response> {
@@ -53,6 +59,12 @@ function fail(id: string, label: string, message: string): MpesaDiagnosticCheck 
 
 export async function runMpesaDiagnostics(): Promise<MpesaDiagnosticsReport> {
   const checks: MpesaDiagnosticCheck[] = [];
+  const resolvedUrls = {
+    oauth: getMpesaOAuthUrl(),
+    stkPush: getMpesaStkPushUrl(),
+    stkQuery: getMpesaStkPushQueryUrl(),
+    callback: getMpesaCallbackUrl() ?? null,
+  };
 
   if (isSupabaseConfigured()) {
     checks.push(pass("supabase-core", "Supabase URL + anon key", "Configured."));
@@ -141,7 +153,7 @@ export async function runMpesaDiagnostics(): Promise<MpesaDiagnosticsReport> {
   if (key && secret) {
     try {
       const basic = Buffer.from(`${key}:${secret}`).toString("base64");
-      const oauthRes = await fetchWithTimeout(getMpesaOAuthUrl(), {
+      const oauthRes = await fetchWithTimeout(resolvedUrls.oauth, {
         headers: { Authorization: `Basic ${basic}` },
       });
       const text = await oauthRes.text();
@@ -168,8 +180,8 @@ export async function runMpesaDiagnostics(): Promise<MpesaDiagnosticsReport> {
   }
 
   for (const [id, label, url] of [
-    ["stk-endpoint", "STK push endpoint", getMpesaStkPushUrl()],
-    ["stk-query-endpoint", "STK query endpoint", getMpesaStkPushQueryUrl()],
+    ["stk-endpoint", "STK push endpoint", resolvedUrls.stkPush],
+    ["stk-query-endpoint", "STK query endpoint", resolvedUrls.stkQuery],
   ] as const) {
     try {
       const res = await fetchWithTimeout(url, { method: "OPTIONS" });
@@ -238,5 +250,6 @@ export async function runMpesaDiagnostics(): Promise<MpesaDiagnosticsReport> {
   return {
     checkedAtIso: new Date().toISOString(),
     checks,
+    resolvedUrls,
   };
 }

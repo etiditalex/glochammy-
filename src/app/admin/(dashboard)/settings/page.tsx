@@ -47,6 +47,23 @@ export default async function AdminSettingsPage() {
 
         <div className={`mt-4 rounded border px-3 py-2 text-sm ${statusTone}`}>{summaryText}</div>
 
+        <div className="mt-4 rounded border border-line bg-subtle p-3 text-xs text-muted">
+          <p className="font-semibold uppercase tracking-nav text-muted">Resolved endpoint URLs</p>
+          <p className="mt-2">
+            <span className="font-medium text-ink">OAuth:</span> {report.resolvedUrls.oauth}
+          </p>
+          <p className="mt-1">
+            <span className="font-medium text-ink">STK push:</span> {report.resolvedUrls.stkPush}
+          </p>
+          <p className="mt-1">
+            <span className="font-medium text-ink">STK query:</span> {report.resolvedUrls.stkQuery}
+          </p>
+          <p className="mt-1">
+            <span className="font-medium text-ink">Callback:</span>{" "}
+            {report.resolvedUrls.callback ?? "Not resolved"}
+          </p>
+        </div>
+
         <div className="mt-4 space-y-2">
           {report.checks.map((check) => {
             const badgeTone =
