@@ -105,12 +105,12 @@ export async function runMpesaDiagnostics(): Promise<MpesaDiagnosticsReport> {
           "Callback is not HTTPS. Live Daraja callback requires public HTTPS.",
         ),
       );
-    } else if (!/\/api\/mpesa\/stk-callback\/?$/i.test(callbackUrl)) {
+    } else if (!/\/api\/(daraja\/callback|mpesa\/stk-callback)\/?$/i.test(callbackUrl)) {
       checks.push(
         warn(
           "callback-path",
           "Callback URL path",
-          "Callback URL does not end with /api/mpesa/stk-callback. Verify Daraja app settings.",
+          "Callback URL should end with /api/daraja/callback (or legacy /api/mpesa/stk-callback). Verify Daraja app settings.",
         ),
       );
     } else {

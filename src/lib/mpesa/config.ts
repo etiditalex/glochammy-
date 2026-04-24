@@ -129,7 +129,7 @@ export function isMpesaStkAvailable(): boolean {
   );
 }
 
-/** Service role lets `/api/mpesa/stk-callback` mark orders paid (RLS blocks anon updates). */
+/** Service role lets callback routes mark orders paid (RLS blocks anon updates). */
 export function isMpesaAutoCompleteConfigured(): boolean {
   return Boolean(getSupabaseServiceRoleKey());
 }
