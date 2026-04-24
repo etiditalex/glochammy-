@@ -12,6 +12,49 @@ import { ButtonPush } from "@/components/ui/button-push";
 import type { Product } from "@/lib/types/commerce";
 import { useEffect, useState } from "react";
 
+const MPESA_PENDING_STORAGE_KEY = "glochammy-mpesa-pending-v1";
+
+type PendingMpesaCheckout = {
+  orderId: string;
+  nonce: string;
+  customerMessage?: string;
+};
+
+function readPendingMpesaCheckout(): PendingMpesaCheckout | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(MPESA_PENDING_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PendingMpesaCheckout> | null;
+    if (!parsed?.orderId || !parsed?.nonce) return null;
+    return {
+      orderId: parsed.orderId,
+      nonce: parsed.nonce,
+      customerMessage: parsed.customerMessage,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writePendingMpesaCheckout(pending: PendingMpesaCheckout): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(MPESA_PENDING_STORAGE_KEY, JSON.stringify(pending));
+  } catch {
+    /* no-op */
+  }
+}
+
+function clearPendingMpesaCheckout(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(MPESA_PENDING_STORAGE_KEY);
+  } catch {
+    /* no-op */
+  }
+}
+
 export type OrderCompleteInfo = { orderId: string; kind: "mpesa" | "later" };
 
 type Props = {
@@ -46,6 +89,18 @@ export function CartCheckout({
   const showMpesa = mpesaConfigured && currency === "KES";
 
   useEffect(() => {
+    const pendingCheckout = readPendingMpesaCheckout();
+    if (!pendingCheckout) return;
+
+    setMpesaHint(
+      pendingCheckout.customerMessage ?? "Complete payment on your phone to finish the order.",
+    );
+    setPollOrderId(pendingCheckout.orderId);
+    setPollNonce(pendingCheckout.nonce);
+    setMpesaPhase("waiting");
+  }, []);
+
+  useEffect(() => {
     if (mpesaPhase !== "waiting" || !pollOrderId || !pollNonce) return;
     let cancelled = false;
     let paid = false;
@@ -63,6 +118,7 @@ export function CartCheckout({
         setPollOrderId(null);
         setPollNonce(null);
         setMpesaHint(null);
+        clearPendingMpesaCheckout();
         onPlacedOrderAction?.({ orderId: pollOrderId, kind: "mpesa" });
         clear();
       }
@@ -124,6 +180,19 @@ export function CartCheckout({
 
   async function submitMpesa() {
     setError(null);
+    if (readPendingMpesaCheckout()) {
+      setMpesaPhase("waiting");
+      const pendingCheckout = readPendingMpesaCheckout();
+      if (pendingCheckout) {
+        setPollOrderId(pendingCheckout.orderId);
+        setPollNonce(pendingCheckout.nonce);
+        setMpesaHint(
+          pendingCheckout.customerMessage ??
+            "You already started M-Pesa payment for this order. Complete it on your phone.",
+        );
+      }
+      return;
+    }
     if (!configured) {
       setError("Connect Supabase in your environment to place orders.");
       return;
@@ -163,6 +232,11 @@ export function CartCheckout({
       return;
     }
 
+    writePendingMpesaCheckout({
+      orderId: result.orderId,
+      nonce: result.nonce,
+      customerMessage: result.customerMessage,
+    });
     setMpesaHint(result.customerMessage);
     setPollOrderId(result.orderId);
     setPollNonce(result.nonce);

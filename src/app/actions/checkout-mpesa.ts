@@ -80,11 +80,21 @@ export async function createMpesaCheckoutAction(input: {
     return { ok: false, error: "Order total is too small to pay with M-Pesa." };
   }
 
-  const stk = await initiateMpesaStkPush({
-    phoneRaw: phone,
-    amountKes,
-    orderId: parsed.orderId,
-  });
+  let stk;
+  try {
+    stk = await initiateMpesaStkPush({
+      phoneRaw: phone,
+      amountKes,
+      orderId: parsed.orderId,
+    });
+  } catch (error) {
+    console.error("initiateMpesaStkPush", error);
+    return {
+      ok: false,
+      error:
+        "Could not start M-Pesa prompt right now. Confirm your Daraja credentials and try again.",
+    };
+  }
 
   if (!stk.ok) {
     return { ok: false, error: stk.error };
