@@ -1,11 +1,12 @@
 import { Buffer } from "node:buffer";
 import {
-  getMpesaBaseUrl,
   getMpesaConsumerKey,
   getMpesaConsumerSecret,
+  getMpesaOAuthUrl,
   getMpesaPartyB,
   getMpesaPasskey,
   getMpesaShortcode,
+  getMpesaStkPushUrl,
   getMpesaTransactionType,
   getMpesaCallbackUrl,
 } from "@/lib/mpesa/config";
@@ -39,17 +40,13 @@ function stkPassword(shortcode: string, passkey: string, timestamp: string): str
 async function fetchAccessToken(): Promise<string> {
   const key = getMpesaConsumerKey();
   const secret = getMpesaConsumerSecret();
-  const base = getMpesaBaseUrl();
   if (!key || !secret) throw new Error("Missing MPESA_CONSUMER_KEY or MPESA_CONSUMER_SECRET");
 
   const basic = Buffer.from(`${key}:${secret}`).toString("base64");
-  const res = await fetch(
-    `${base}/oauth/v1/generate?grant_type=client_credentials`,
-    {
-      headers: { Authorization: `Basic ${basic}` },
-      next: { revalidate: 0 },
-    },
-  );
+  const res = await fetch(getMpesaOAuthUrl(), {
+    headers: { Authorization: `Basic ${basic}` },
+    next: { revalidate: 0 },
+  });
   if (!res.ok) {
     const t = await res.text();
     throw new Error(`Daraja OAuth failed: ${res.status} ${t}`);
@@ -82,7 +79,6 @@ export async function initiateStkPush(input: {
   const partyB = getMpesaPartyB();
   const callback = getMpesaCallbackUrl();
   const txType = getMpesaTransactionType();
-  const base = getMpesaBaseUrl();
 
   if (!shortcode || !passkey || !partyB || !callback) {
     return { ok: false, error: "M-Pesa is not fully configured on the server." };
@@ -117,7 +113,7 @@ export async function initiateStkPush(input: {
     TransactionDesc: input.transactionDesc.slice(0, 13),
   };
 
-  const res = await fetch(`${base}/mpesa/stkpush/v1/processrequest`, {
+  const res = await fetch(getMpesaStkPushUrl(), {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,

@@ -20,6 +20,64 @@ export function getMpesaPasskey(): string | undefined {
   return process.env.MPESA_PASSKEY?.trim();
 }
 
+export function getMpesaBaseUrl(): string {
+  const explicit = process.env.MPESA_BASE_URL?.trim();
+  if (explicit) return explicit.replace(/\/+$/, "");
+
+  const sandbox = process.env.MPESA_USE_SANDBOX !== "false";
+  return sandbox
+    ? "https://sandbox.safaricom.co.ke"
+    : "https://api.safaricom.co.ke";
+}
+
+function resolveDarajaUrl(explicit: string | undefined, fallbackPath: string): string {
+  if (explicit && explicit.trim()) return explicit.trim();
+  return `${getMpesaBaseUrl()}${fallbackPath}`;
+}
+
+export function getMpesaStkPushUrl(): string {
+  return resolveDarajaUrl(
+    process.env.MPESA_STKPUSH_URL,
+    "/mpesa/stkpush/v1/processrequest",
+  );
+}
+
+export function getMpesaStkPushQueryUrl(): string {
+  return resolveDarajaUrl(
+    process.env.MPESA_STKPUSH_QUERY_URL,
+    "/mpesa/stkpushquery/v1/query",
+  );
+}
+
+export function getMpesaB2cUrl(): string {
+  return resolveDarajaUrl(
+    process.env.MPESA_B2C_URL,
+    "/mpesa/b2c/v1/paymentrequest",
+  );
+}
+
+export function getMpesaTransactionStatusUrl(): string {
+  return resolveDarajaUrl(
+    process.env.MPESA_TRANSACTION_STATUS_URL,
+    "/mpesa/transactionstatus/v1/query",
+  );
+}
+
+export function getMpesaAccountBalanceUrl(): string {
+  return resolveDarajaUrl(
+    process.env.MPESA_ACCOUNT_BALANCE_URL,
+    "/mpesa/accountbalance/v1/query",
+  );
+}
+
+export function getMpesaOAuthUrl(): string {
+  return `${getMpesaBaseUrl()}/oauth/v1/generate?grant_type=client_credentials`;
+}
+
+export function getMpesaB2cSecurityCredential(): string | undefined {
+  return process.env.MPESA_B2C_SECURITY_CREDENTIAL?.trim();
+}
+
 /**
  * Lipa Na M-Pesa Online password uses this shortcode; may match MPESA_SHORTCODE or differ for some setups.
  */
@@ -36,13 +94,6 @@ export function getMpesaTransactionType(): string {
   return (
     process.env.MPESA_TRANSACTION_TYPE?.trim() || "CustomerPayBillOnline"
   );
-}
-
-export function getMpesaBaseUrl(): string {
-  const sandbox = process.env.MPESA_USE_SANDBOX !== "false";
-  return sandbox
-    ? "https://sandbox.safaricom.co.ke"
-    : "https://api.safaricom.co.ke";
 }
 
 /**
