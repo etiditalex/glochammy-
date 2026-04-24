@@ -143,6 +143,7 @@ export async function initiateStkPush(input: {
     errorMessage?: string;
     errorCode?: string;
     requestId?: string;
+    raw?: string;
   };
 
   if (!res.ok) {
