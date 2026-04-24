@@ -86,7 +86,16 @@ export function getMpesaPartyB(): string | undefined {
 }
 
 export function getMpesaCallbackUrl(): string | undefined {
-  return process.env.MPESA_CALLBACK_URL?.trim();
+  const explicit = process.env.MPESA_CALLBACK_URL?.trim();
+  if (explicit) return explicit;
+
+  const site = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (site) return `${site.replace(/\/+$/, "")}/api/mpesa/stk-callback`;
+
+  const vercelUrl = process.env.VERCEL_URL?.trim();
+  if (vercelUrl) return `https://${vercelUrl.replace(/\/+$/, "")}/api/mpesa/stk-callback`;
+
+  return undefined;
 }
 
 /** CustomerPayBillOnline | CustomerBuyGoodsOnline */
