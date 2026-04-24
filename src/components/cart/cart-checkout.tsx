@@ -288,16 +288,7 @@ export function CartCheckout({
             disabled={pending || lines.length === 0}
             onClick={() => void submitMpesa()}
           >
-            {pending ? "Starting M-Pesa…" : "Pay with M-Pesa"}
-          </ButtonPush>
-          <ButtonPush
-            type="button"
-            variant="secondary"
-            className="w-full"
-            disabled={pending || lines.length === 0}
-            onClick={() => void submitPayLater()}
-          >
-            Place order (pay later / other method)
+            {pending ? "Starting M-Pesa…" : "Place order"}
           </ButtonPush>
         </div>
       ) : (
