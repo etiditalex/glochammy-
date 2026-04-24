@@ -88,7 +88,7 @@ export function CartCheckout({
   const [phone, setPhone] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mpesaPhase, setMpesaPhase] = useState<"idle" | "waiting" | "timed_out">("idle");
+  const [mpesaPhase, setMpesaPhase] = useState<"idle" | "waiting" | "timed_out" | "failed">("idle");
   const [mpesaHint, setMpesaHint] = useState<string | null>(null);
   const [pollOrderId, setPollOrderId] = useState<string | null>(null);
   const [pollNonce, setPollNonce] = useState<string | null>(null);
@@ -117,7 +117,7 @@ export function CartCheckout({
   }, []);
 
   useEffect(() => {
-    if (mpesaPhase !== "waiting" || !pollOrderId || !pollNonce) return;
+    if ((mpesaPhase !== "waiting" && mpesaPhase !== "timed_out") || !pollOrderId || !pollNonce) return;
     let cancelled = false;
     let paid = false;
 
@@ -144,7 +144,7 @@ export function CartCheckout({
       }
 
       if (pr.status === "cancelled" || pr.status === "failed" || (pr.resultCode ?? 0) !== 0) {
-        setMpesaPhase("timed_out");
+        setMpesaPhase("failed");
         const codePart = pr.resultCode != null ? ` (code ${pr.resultCode})` : "";
         setError(
           pr.resultDesc
@@ -158,16 +158,19 @@ export function CartCheckout({
     };
 
     void tick();
-    const interval = setInterval(() => void tick(), 2500);
-    const timeout = setTimeout(() => {
-      if (cancelled || paid) return;
-      setMpesaPhase("timed_out");
-    }, 90_000);
+    const interval = setInterval(() => void tick(), mpesaPhase === "waiting" ? 2500 : 4000);
+    const timeout =
+      mpesaPhase === "waiting"
+        ? setTimeout(() => {
+            if (cancelled || paid) return;
+            setMpesaPhase("timed_out");
+          }, 90_000)
+        : null;
 
     return () => {
       cancelled = true;
       clearInterval(interval);
-      clearTimeout(timeout);
+      if (timeout) clearTimeout(timeout);
     };
   }, [mpesaPhase, pollOrderId, pollNonce, clear, onPlacedOrderAction]);
 
@@ -275,7 +278,7 @@ export function CartCheckout({
     setMpesaPhase("waiting");
   }
 
-  if (mpesaPhase === "waiting" || mpesaPhase === "timed_out") {
+  if (mpesaPhase === "waiting" || mpesaPhase === "timed_out" || mpesaPhase === "failed") {
     const oid = pollOrderId ?? "";
     return (
       <div className="space-y-4" role="status">
@@ -308,12 +311,22 @@ export function CartCheckout({
               ? "Without the service role key, this screen may not flip to success even if you paid—check Admin for the order."
               : null}
           </p>
+        ) : mpesaPhase === "failed" ? (
+          <div className="space-y-3">
+            <p className="text-sm text-red-700" role="alert">
+              {error ?? "M-Pesa payment was not completed. Confirm your phone number and try again."}
+            </p>
+            <ButtonPush type="button" variant="secondary" className="w-full" onClick={resetPendingMpesaState}>
+              Try checkout again
+            </ButtonPush>
+          </div>
         ) : (
           <div className="space-y-3">
             <p className="text-2xs text-muted">
               This is taking longer than usual. If you already entered your PIN, payment can still
-              complete in the background. Keep this page open or check your email; the admin dashboard
-              will update when Safaricom confirms
+              complete in the background. Keep this page open while we continue checking Safaricom status.
+              We will automatically switch this screen to successful or failed as soon as we get a final
+              response
               {mpesaAutoComplete
                 ? ""
                 : " (after you add SUPABASE_SERVICE_ROLE_KEY for auto-updates)"}
