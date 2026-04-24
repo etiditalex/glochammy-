@@ -12,7 +12,7 @@ type Props = {
 export function OrderThankYou({ orderId, kind }: Props) {
   const statusLine =
     kind === "mpesa"
-      ? "Your payment was confirmed and your order is in our system."
+      ? "Transaction status: Successful. Your payment was confirmed and your order is in our system."
       : "Your order is in our system.";
 
   return (

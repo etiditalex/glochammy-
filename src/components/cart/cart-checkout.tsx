@@ -294,12 +294,23 @@ export function CartCheckout({
 
   if (mpesaPhase === "waiting" || mpesaPhase === "timed_out" || mpesaPhase === "failed") {
     const oid = pollOrderId ?? "";
+    const txStatusLabel =
+      mpesaPhase === "failed"
+        ? "Canceled or failed"
+        : mpesaPhase === "timed_out"
+          ? "Payment processing"
+          : "Awaiting approval";
     return (
       <div className="space-y-4" role="status">
         <p className="text-sm font-medium text-ink">
-          {mpesaPhase === "timed_out" ? "Payment processing" : "Complete payment on your phone"}
+          {mpesaPhase === "failed"
+            ? "Payment not completed"
+            : mpesaPhase === "timed_out"
+              ? "Payment processing"
+              : "Complete payment on your phone"}
         </p>
-        <p className="text-sm text-muted">{mpesaHint}</p>
+        <p className="text-2xs uppercase tracking-nav text-muted">Transaction status: {txStatusLabel}</p>
+        {mpesaPhase !== "failed" && mpesaHint ? <p className="text-sm text-muted">{mpesaHint}</p> : null}
         <div className="rounded border border-line bg-subtle p-3 text-left">
           <p className="text-2xs font-semibold uppercase tracking-nav text-muted">
             Order ID (save for tracking)
