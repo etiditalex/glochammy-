@@ -13,11 +13,13 @@ import type { Product } from "@/lib/types/commerce";
 import { useEffect, useState } from "react";
 
 const MPESA_PENDING_STORAGE_KEY = "glochammy-mpesa-pending-v1";
+const MPESA_PENDING_TTL_MS = 15 * 60 * 1000;
 
 type PendingMpesaCheckout = {
   orderId: string;
   nonce: string;
   customerMessage?: string;
+  createdAtMs: number;
 };
 
 function readPendingMpesaCheckout(): PendingMpesaCheckout | null {
@@ -26,11 +28,17 @@ function readPendingMpesaCheckout(): PendingMpesaCheckout | null {
     const raw = window.localStorage.getItem(MPESA_PENDING_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<PendingMpesaCheckout> | null;
-    if (!parsed?.orderId || !parsed?.nonce) return null;
+    if (!parsed?.orderId || !parsed?.nonce || !Number.isFinite(parsed.createdAtMs)) return null;
+    const createdAtMs = Number(parsed.createdAtMs);
+    if (Date.now() - createdAtMs > MPESA_PENDING_TTL_MS) {
+      window.localStorage.removeItem(MPESA_PENDING_STORAGE_KEY);
+      return null;
+    }
     return {
       orderId: parsed.orderId,
       nonce: parsed.nonce,
       customerMessage: parsed.customerMessage,
+      createdAtMs,
     };
   } catch {
     return null;
@@ -87,6 +95,14 @@ export function CartCheckout({
 
   const configured = isBrowserSupabaseConfigured();
   const showMpesa = mpesaConfigured && currency === "KES";
+
+  function resetPendingMpesaState() {
+    clearPendingMpesaCheckout();
+    setMpesaPhase("idle");
+    setMpesaHint(null);
+    setPollOrderId(null);
+    setPollNonce(null);
+  }
 
   useEffect(() => {
     const pendingCheckout = readPendingMpesaCheckout();
@@ -180,17 +196,15 @@ export function CartCheckout({
 
   async function submitMpesa() {
     setError(null);
-    if (readPendingMpesaCheckout()) {
+    const existingPending = readPendingMpesaCheckout();
+    if (existingPending) {
       setMpesaPhase("waiting");
-      const pendingCheckout = readPendingMpesaCheckout();
-      if (pendingCheckout) {
-        setPollOrderId(pendingCheckout.orderId);
-        setPollNonce(pendingCheckout.nonce);
-        setMpesaHint(
-          pendingCheckout.customerMessage ??
-            "You already started M-Pesa payment for this order. Complete it on your phone.",
-        );
-      }
+      setPollOrderId(existingPending.orderId);
+      setPollNonce(existingPending.nonce);
+      setMpesaHint(
+        existingPending.customerMessage ??
+          "You already started M-Pesa payment for this order. Complete it on your phone.",
+      );
       return;
     }
     if (!configured) {
@@ -236,6 +250,7 @@ export function CartCheckout({
       orderId: result.orderId,
       nonce: result.nonce,
       customerMessage: result.customerMessage,
+      createdAtMs: Date.now(),
     });
     setMpesaHint(result.customerMessage);
     setPollOrderId(result.orderId);
@@ -277,12 +292,20 @@ export function CartCheckout({
               : null}
           </p>
         ) : (
-          <p className="text-2xs text-muted">
-            This is taking longer than usual. If you already entered your PIN, payment can still
-            complete in the background. Keep this page open or check your email; the admin dashboard
-            will update when Safaricom confirms
-            {mpesaAutoComplete ? "" : " (after you add SUPABASE_SERVICE_ROLE_KEY for auto-updates)"}.
-          </p>
+          <div className="space-y-3">
+            <p className="text-2xs text-muted">
+              This is taking longer than usual. If you already entered your PIN, payment can still
+              complete in the background. Keep this page open or check your email; the admin dashboard
+              will update when Safaricom confirms
+              {mpesaAutoComplete
+                ? ""
+                : " (after you add SUPABASE_SERVICE_ROLE_KEY for auto-updates)"}
+              .
+            </p>
+            <ButtonPush type="button" variant="secondary" className="w-full" onClick={resetPendingMpesaState}>
+              Start a new checkout
+            </ButtonPush>
+          </div>
         )}
       </div>
     );
