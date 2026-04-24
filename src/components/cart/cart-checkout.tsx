@@ -151,6 +151,7 @@ export function CartCheckout({
             ? `M-Pesa did not complete${codePart}: ${pr.resultDesc}. Confirm your phone number and try again.`
             : `M-Pesa did not complete${codePart}. Confirm your phone number and try again.`,
         );
+        setMpesaHint(null);
         clearPendingMpesaCheckout();
         setPollOrderId(null);
         setPollNonce(null);
@@ -282,28 +283,32 @@ export function CartCheckout({
     const oid = pollOrderId ?? "";
     return (
       <div className="space-y-4" role="status">
-        <p className="text-sm font-medium text-ink">Complete payment on your phone</p>
-        <p className="text-sm text-muted">{mpesaHint}</p>
-        <div className="rounded border border-line bg-subtle p-3 text-left">
-          <p className="text-2xs font-semibold uppercase tracking-nav text-muted">
-            Order ID (save for tracking)
-          </p>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-stretch">
-            {oid ? (
-              <>
-                <code className="min-w-0 flex-1 break-all font-mono text-[11px] leading-relaxed text-ink">
-                  {oid}
-                </code>
-                <CopyOrderIdButton orderId={oid} />
-              </>
-            ) : (
-              <span className="text-2xs text-muted">—</span>
-            )}
+        <p className="text-sm font-medium text-ink">
+          {mpesaPhase === "failed" ? "Payment not completed" : "Complete payment on your phone"}
+        </p>
+        {mpesaPhase !== "failed" && mpesaHint ? <p className="text-sm text-muted">{mpesaHint}</p> : null}
+        {mpesaPhase !== "failed" ? (
+          <div className="rounded border border-line bg-subtle p-3 text-left">
+            <p className="text-2xs font-semibold uppercase tracking-nav text-muted">
+              Order ID (save for tracking)
+            </p>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-stretch">
+              {oid ? (
+                <>
+                  <code className="min-w-0 flex-1 break-all font-mono text-[11px] leading-relaxed text-ink">
+                    {oid}
+                  </code>
+                  <CopyOrderIdButton orderId={oid} />
+                </>
+              ) : (
+                <span className="text-2xs text-muted">—</span>
+              )}
+            </div>
+            <p className="mt-2 text-2xs text-muted">
+              Your order is already in our system and will show as paid when M-Pesa confirms.
+            </p>
           </div>
-          <p className="mt-2 text-2xs text-muted">
-            Your order is already in our system and will show as paid when M-Pesa confirms.
-          </p>
-        </div>
+        ) : null}
         {mpesaPhase === "waiting" ? (
           <p className="text-2xs text-muted">
             Waiting for M-Pesa confirmation…{" "}
