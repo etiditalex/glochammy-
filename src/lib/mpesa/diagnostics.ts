@@ -187,10 +187,10 @@ export async function runMpesaDiagnostics(): Promise<MpesaDiagnosticsReport> {
       const res = await fetchWithTimeout(url, { method: "OPTIONS" });
       if (res.status === 404) {
         checks.push(
-          fail(
+          warn(
             id,
             label,
-            `Returned 404. Verify MPESA_BASE_URL / custom endpoint URL and environment (sandbox vs live).`,
+            `OPTIONS returned 404. Daraja may not support OPTIONS on this route; this does not always mean STK is broken. Validate with OAuth + a real STK request response.`,
           ),
         );
       } else if (res.status >= 200 && res.status < 500) {
