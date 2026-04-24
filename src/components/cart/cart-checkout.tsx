@@ -298,9 +298,8 @@ export function CartCheckout({
               complete in the background. Keep this page open or check your email; the admin dashboard
               will update when Safaricom confirms
               {mpesaAutoComplete
-                ? ""
-                : " (after you add SUPABASE_SERVICE_ROLE_KEY for auto-updates)"}
-              .
+                ? "."
+                : " (after you add SUPABASE_SERVICE_ROLE_KEY for auto-updates)."}
             </p>
             <ButtonPush type="button" variant="secondary" className="w-full" onClick={resetPendingMpesaState}>
               Start a new checkout
