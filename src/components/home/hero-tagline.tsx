@@ -6,8 +6,11 @@ export function HeroTagline() {
       <div className="mx-auto min-w-0 max-w-content px-6 sm:px-8">
         <FadeIn>
           <p className="mx-auto max-w-[min(92vw,36rem)] text-center font-sans text-base font-normal leading-snug tracking-[-0.02em] text-[#333333] sm:text-xl sm:leading-normal md:text-2xl md:leading-relaxed lg:text-[1.65rem] lg:leading-[1.45]">
-            <span className="block">Glochammy Beauty Skincare Solutions</span>
-            <span className="block">to fit your needs</span>
+            <span className="block">
+              <strong className="font-semibold text-ink">Glochammy Beauty</strong>{" "}
+              <strong className="font-semibold">Skincare Solutions</strong>
+            </span>
+            <span className="block font-medium text-ink/80">to fit your needs</span>
           </p>
         </FadeIn>
       </div>

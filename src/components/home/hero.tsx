@@ -1,25 +1,36 @@
 import { HeroTagline } from "@/components/home/hero-tagline";
 import { HeroBackgroundMedia } from "@/components/home/hero-background-media";
 import { ButtonLink } from "@/components/ui/button-link";
-import { BRAND } from "@/lib/constants";
 
-const id = BRAND.heroYoutubeVideoId;
-
-const heroBackgroundEmbedSrc =
-  `https://www.youtube.com/embed/${id}` +
-  `?autoplay=1&mute=1&loop=1&controls=0&modestbranding=1&playsinline=1&rel=0` +
-  `&playlist=${id}`;
+const heroBackgroundImageSrc =
+  "https://res.cloudinary.com/dyfnobo9r/image/upload/v1777986955/beauty_hero_section_ptnrgr.jpg";
 
 export function Hero() {
   return (
     <>
       <section
         className="relative isolate min-h-[100svh] w-full overflow-hidden bg-ink supports-[min-height:1dvh]:min-h-[100dvh] md:min-h-[88vh] md:supports-[min-height:1dvh]:min-h-[88dvh]"
-        aria-label="Video"
+        aria-label="Hero"
       >
         <div className="absolute inset-0 z-0">
           <div className="h-full w-full overflow-hidden">
-            <HeroBackgroundMedia videoSrc={heroBackgroundEmbedSrc} />
+            <HeroBackgroundMedia imageSrc={heroBackgroundImageSrc} />
+          </div>
+        </div>
+
+        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/55 via-black/25 to-black/60" />
+
+        <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-content flex-col items-center justify-center px-6 text-center supports-[min-height:1dvh]:min-h-[100dvh] md:min-h-[88vh] md:supports-[min-height:1dvh]:min-h-[88dvh]">
+          <div className="max-w-[min(92vw,44rem)]">
+            <p className="font-sans text-3xl font-medium leading-tight tracking-[-0.02em] text-white sm:text-4xl md:text-5xl">
+              <strong className="font-semibold">Glochammy Beauty</strong>{" "}
+              <span className="text-white/90">—</span>{" "}
+              <strong className="font-semibold">Skincare Solutions</strong>{" "}
+              <span className="text-white/90">that fit your needs</span>
+            </p>
+            <p className="mt-4 text-base font-normal leading-relaxed text-white/85 sm:text-lg">
+              Shop quality beauty essentials and book salon services in Kilifi.
+            </p>
           </div>
         </div>
 
