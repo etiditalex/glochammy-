@@ -1,10 +1,18 @@
 "use client";
 
-import { HydrationChallengePopup } from "@/components/layout/hydration-challenge-popup";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+
+const HydrationChallengePopup = dynamic(
+  () =>
+    import("@/components/layout/hydration-challenge-popup").then(
+      (m) => m.HydrationChallengePopup,
+    ),
+  { ssr: false },
+);
 
 /**
  * Public shop uses header + footer. Admin/CMS routes are full-viewport with no storefront chrome.

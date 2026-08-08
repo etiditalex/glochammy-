@@ -3,6 +3,7 @@ import { ShopFilters } from "@/components/shop/shop-filters";
 import { getProductCategories } from "@/lib/products/categories";
 import { getShopProducts } from "@/lib/products/catalog";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 export const revalidate = 60;
 
@@ -55,12 +56,24 @@ export default async function ShopPage({
           </FadeIn>
         </div>
       </section>
-      <ShopFilters
-        products={products}
-        categoryOptions={categoryRows}
-        initialCategory={initialCategory}
-        initialFeaturedOnly={initialFeaturedOnly}
-      />
+      <Suspense
+        fallback={
+          <div
+            className="mx-auto max-w-content px-4 py-16 sm:px-8"
+            aria-busy
+            aria-label="Loading filters"
+          >
+            <div className="h-10 w-full max-w-md animate-pulse bg-line" />
+          </div>
+        }
+      >
+        <ShopFilters
+          products={products}
+          categoryOptions={categoryRows}
+          initialCategory={initialCategory}
+          initialFeaturedOnly={initialFeaturedOnly}
+        />
+      </Suspense>
     </div>
   );
 }

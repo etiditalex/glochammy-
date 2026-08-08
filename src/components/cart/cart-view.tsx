@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  CartCheckout,
-  type OrderCompleteInfo,
-} from "@/components/cart/cart-checkout";
+import { type OrderCompleteInfo } from "@/components/cart/cart-checkout";
 import { OrderThankYou } from "@/components/cart/order-thank-you";
 import { useCart } from "@/context/cart-context";
 import { products as staticCatalog } from "@/lib/data/products";
@@ -12,10 +9,25 @@ import type { Product } from "@/lib/types/commerce";
 import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import { ButtonLink } from "@/components/ui/button-link";
 import { ButtonPush } from "@/components/ui/button-push";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useMemo } from "react";
+
+const CartCheckoutLazy = dynamic(
+  () =>
+    import("@/components/cart/cart-checkout").then((m) => m.CartCheckout),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="mt-6 h-40 animate-pulse rounded-none border border-line bg-white/60"
+        aria-hidden
+      />
+    ),
+  },
+);
 
 type CartViewProps = {
   /** When set (e.g. from Supabase-backed shop), resolves line items; otherwise static demo catalog. */
@@ -198,7 +210,7 @@ export function CartView({
             <span>{formatMoney(subtotalCents, currency)}</span>
           </div>
         </div>
-        <CartCheckout
+        <CartCheckoutLazy
           catalog={list}
           checkoutSession={checkoutSession}
           currency={currency}

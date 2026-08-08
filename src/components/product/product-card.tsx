@@ -5,7 +5,6 @@ import { useCart } from "@/context/cart-context";
 import { formatMoney } from "@/lib/format";
 import type { Product } from "@/lib/types/commerce";
 import { ButtonPush } from "@/components/ui/button-push";
-import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -22,14 +21,15 @@ export function ProductCard({
   flush = false,
 }: ProductCardProps) {
   const { addItem } = useCart();
-  const reduce = useReducedMotion();
   const cover = product.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL;
   const frame = flush ? "" : "border border-line";
   const availableStock = Math.max(0, product.stockQuantity ?? 0);
   const isOutOfStock = availableStock <= 0;
 
-  const article = (
-    <article className={`group flex h-full flex-col bg-white ${frame}`}>
+  return (
+    <article
+      className={`group flex h-full flex-col bg-white transition-transform duration-200 ease-out hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0 ${frame}`}
+    >
       <Link
         href={`/shop/${product.slug}`}
         className="flex min-h-0 flex-1 flex-col outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
@@ -44,7 +44,7 @@ export function ProductCard({
                 ? "(min-width: 1024px) 26vw, (min-width: 640px) 50vw, 50vw"
                 : "(min-width: 1280px) 20vw, (min-width: 1024px) 22vw, (min-width: 640px) 45vw, 50vw"
             }
-            className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02]"
+            className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             priority={priority}
           />
         </div>
@@ -65,7 +65,9 @@ export function ProductCard({
           <p className="hidden text-sm font-medium text-ink sm:block">
             {formatMoney(product.priceCents, product.currency)}
           </p>
-          <p className="text-2xs text-muted">{isOutOfStock ? "Out of stock" : `${availableStock} in stock`}</p>
+          <p className="text-2xs text-muted">
+            {isOutOfStock ? "Out of stock" : `${availableStock} in stock`}
+          </p>
         </div>
         <ButtonPush
           type="button"
@@ -79,15 +81,5 @@ export function ProductCard({
         </ButtonPush>
       </div>
     </article>
-  );
-
-  if (reduce) {
-    return <div className="h-full">{article}</div>;
-  }
-
-  return (
-    <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }} className="h-full">
-      {article}
-    </motion.div>
   );
 }

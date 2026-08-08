@@ -2,15 +2,20 @@
 
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 type Props = {
   orderId?: string;
+  /** Polling fallback when realtime is unavailable (default 90s). */
   intervalMs?: number;
 };
 
-export function OrdersAutoRefresh({ orderId, intervalMs = 30000 }: Props) {
+/**
+ * Prefers Supabase realtime; only polls when the channel isn't healthy.
+ */
+export function OrdersAutoRefresh({ orderId, intervalMs = 90000 }: Props) {
   const router = useRouter();
+  const realtimeHealthy = useRef(false);
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient();
@@ -37,12 +42,16 @@ export function OrdersAutoRefresh({ orderId, intervalMs = 30000 }: Props) {
           scheduleRefresh();
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        realtimeHealthy.current = status === "SUBSCRIBED";
+      });
 
-    // Fallback poll in case realtime is blocked/disconnected.
     const id = window.setInterval(() => {
-      router.refresh();
+      if (!realtimeHealthy.current) {
+        router.refresh();
+      }
     }, intervalMs);
+
     return () => {
       window.clearInterval(id);
       if (refreshTimer != null) window.clearTimeout(refreshTimer);

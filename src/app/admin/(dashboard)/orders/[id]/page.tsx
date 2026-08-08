@@ -1,8 +1,6 @@
-import { OrderStatusPicker } from "@/components/admin/order-status-picker";
 import { OrdersAutoRefresh } from "@/components/admin/orders-auto-refresh";
 import { formatMoney } from "@/lib/format";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { OrderStatus } from "@/app/actions/admin";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -26,7 +24,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
     .eq("order_id", params.id)
     .order("id", { ascending: true });
 
-  const status = order.status as OrderStatus;
+  const status = String(order.status ?? "pending");
 
   return (
     <div className="space-y-8">
@@ -59,10 +57,11 @@ export default async function AdminOrderDetailPage({ params }: Props) {
         </div>
         <div className="flex max-w-xs flex-col items-end gap-2 text-right">
           <span className="text-2xs uppercase tracking-nav text-muted">Status</span>
-          <OrderStatusPicker orderId={params.id} current={status} />
+          <span className="inline-flex rounded border border-line bg-subtle px-2 py-1 text-2xs uppercase tracking-nav text-ink">
+            {status}
+          </span>
           <p className="text-[11px] leading-snug text-muted">
-            After you verify payment, advance the order through processing, shipped, then delivered—or
-            cancel if needed.
+            This status updates automatically when payment and order events are received.
           </p>
         </div>
       </div>

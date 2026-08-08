@@ -7,6 +7,7 @@ import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createPublicSupabaseServerClient } from "@/lib/supabase/server-public";
 import type { Product } from "@/lib/types/commerce";
+import { cache } from "react";
 
 export { isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -40,7 +41,7 @@ function rowToProduct(row: ProductRow): Product {
   };
 }
 
-export async function getShopProducts(): Promise<Product[]> {
+export const getShopProducts = cache(async (): Promise<Product[]> => {
   if (!isSupabaseConfigured()) return staticProducts;
 
   try {
@@ -61,9 +62,9 @@ export async function getShopProducts(): Promise<Product[]> {
     console.error("getShopProducts", e);
     return staticProducts;
   }
-}
+});
 
-export async function getProductBySlug(slug: string): Promise<Product | undefined> {
+export const getProductBySlug = cache(async (slug: string): Promise<Product | undefined> => {
   if (!isSupabaseConfigured()) return staticGetBySlug(slug);
 
   try {
@@ -84,9 +85,9 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
     console.error("getProductBySlug", e);
     return staticGetBySlug(slug);
   }
-}
+});
 
-export async function getFeaturedProducts(): Promise<Product[]> {
+export const getFeaturedProducts = cache(async (): Promise<Product[]> => {
   if (!isSupabaseConfigured()) return staticFeatured();
 
   try {
@@ -102,15 +103,43 @@ export async function getFeaturedProducts(): Promise<Product[]> {
   } catch {
     return staticFeatured();
   }
-}
+});
 
 export async function getRelatedProducts(slug: string, limit: number): Promise<Product[]> {
   const current = await getProductBySlug(slug);
   if (!current) return [];
-  const all = await getShopProducts();
-  return all
-    .filter((p) => p.slug !== slug && p.category === current.category)
-    .slice(0, limit);
+
+  if (!isSupabaseConfigured()) {
+    return staticProducts
+      .filter((p) => p.slug !== slug && p.category === current.category)
+      .slice(0, limit);
+  }
+
+  try {
+    const supabase = createPublicSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("category", current.category)
+      .neq("slug", slug)
+      .order("sort_order", { ascending: true })
+      .limit(limit);
+
+    if (error) {
+      console.error("getRelatedProducts", error.message);
+      const all = await getShopProducts();
+      return all
+        .filter((p) => p.slug !== slug && p.category === current.category)
+        .slice(0, limit);
+    }
+    return (data as ProductRow[] | null)?.map(rowToProduct) ?? [];
+  } catch (e) {
+    console.error("getRelatedProducts", e);
+    const all = await getShopProducts();
+    return all
+      .filter((p) => p.slug !== slug && p.category === current.category)
+      .slice(0, limit);
+  }
 }
 
 /** Slugs for static generation; prefers DB when configured. */

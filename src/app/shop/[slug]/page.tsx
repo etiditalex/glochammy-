@@ -44,27 +44,23 @@ export default async function ProductPage({ params }: Props) {
   const product = await getProductBySlug(params.slug);
   if (!product) notFound();
 
-  const related = await getRelatedProducts(params.slug, 3);
-
   const longTrim = product.longDescription.trim();
   const shortTrim = product.description.trim();
   const hasDistinctLong =
     longTrim.length > 0 && longTrim.toLowerCase() !== shortTrim.toLowerCase();
 
   const reviewsEnabled = isUuidProductId(product.id);
-  const [initialReviews, initialReviewStats] = reviewsEnabled
-    ? await Promise.all([
-        getProductReviewsList(product.id),
-        getProductReviewStats(product.id),
-      ])
-    : [
-        [],
-        {
+  const [related, initialReviews, initialReviewStats] = await Promise.all([
+    getRelatedProducts(params.slug, 3),
+    reviewsEnabled ? getProductReviewsList(product.id) : Promise.resolve([]),
+    reviewsEnabled
+      ? getProductReviewStats(product.id)
+      : Promise.resolve({
           averageRating: null as number | null,
           reviewCount: 0,
           likeCount: 0,
-        },
-      ];
+        }),
+  ]);
 
   return (
     <div className="bg-white">

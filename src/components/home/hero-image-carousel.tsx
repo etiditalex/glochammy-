@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
 export type HeroSlide = {
@@ -16,6 +17,8 @@ type HeroImageCarouselProps = {
 export function HeroImageCarousel({ slides, intervalMs = 6500 }: HeroImageCarouselProps) {
   const [index, setIndex] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
+  /** Only mount nearby slides so later banners don't compete with LCP. */
+  const [activated, setActivated] = useState<Set<number>>(() => new Set([0]));
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -26,6 +29,15 @@ export function HeroImageCarousel({ slides, intervalMs = 6500 }: HeroImageCarous
   }, []);
 
   useEffect(() => {
+    setActivated((prev) => {
+      if (prev.has(index)) return prev;
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
+  }, [index]);
+
+  useEffect(() => {
     if (slides.length < 2 || reducedMotion) return;
     const id = window.setInterval(() => {
       setIndex((i) => (i + 1) % slides.length);
@@ -33,28 +45,35 @@ export function HeroImageCarousel({ slides, intervalMs = 6500 }: HeroImageCarous
     return () => window.clearInterval(id);
   }, [slides.length, intervalMs, reducedMotion]);
 
-  const go = useCallback((i: number) => {
-    setIndex(((i % slides.length) + slides.length) % slides.length);
-  }, [slides.length]);
+  const go = useCallback(
+    (i: number) => {
+      setIndex(((i % slides.length) + slides.length) % slides.length);
+    },
+    [slides.length],
+  );
 
   if (!slides.length) return null;
 
   return (
     <>
       <div className="absolute inset-0 z-0 overflow-hidden">
-        {slides.map((slide, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={slide.src}
-            src={slide.src}
-            alt={slide.alt}
-            className={`absolute inset-0 h-full w-full object-cover object-left-top transition-opacity duration-700 ease-out motion-reduce:transition-none ${
-              i === index ? "z-[1] opacity-100" : "z-0 opacity-0"
-            }`}
-            loading={i === 0 ? "eager" : "lazy"}
-            aria-hidden={i !== index}
-          />
-        ))}
+        {slides.map((slide, i) => {
+          if (!activated.has(i)) return null;
+          return (
+            <Image
+              key={slide.src}
+              src={slide.src}
+              alt={slide.alt}
+              fill
+              priority={i === 0}
+              sizes="100vw"
+              className={`object-cover object-left-top transition-opacity duration-700 ease-out motion-reduce:transition-none ${
+                i === index ? "z-[1] opacity-100" : "z-0 opacity-0"
+              }`}
+              aria-hidden={i !== index}
+            />
+          );
+        })}
       </div>
 
       {slides.length > 1 ? (

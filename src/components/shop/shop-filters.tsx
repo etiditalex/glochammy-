@@ -3,7 +3,8 @@
 import type { Product } from "@/lib/types/commerce";
 import { formatMoney } from "@/lib/format";
 import { ProductCard } from "@/components/product/product-card";
-import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { startTransition, useEffect, useMemo, useState } from "react";
 
 export type ShopCategoryOption = { slug: string; name: string };
 
@@ -20,6 +21,10 @@ export function ShopFilters({
   initialCategory = "all",
   initialFeaturedOnly = false,
 }: ShopFiltersProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const filterButtons = useMemo(
     () => [
       { id: "all", label: "All" },
@@ -39,6 +44,23 @@ export function ShopFilters({
   useEffect(() => {
     setFeaturedOnly(initialFeaturedOnly);
   }, [initialFeaturedOnly]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (category === "all") params.delete("category");
+    else params.set("category", category);
+    if (featuredOnly) params.set("featured", "1");
+    else params.delete("featured");
+    const qs = params.toString();
+    const next = qs ? `${pathname}?${qs}` : pathname;
+    const current = searchParams.toString()
+      ? `${pathname}?${searchParams.toString()}`
+      : pathname;
+    if (next === current) return;
+    startTransition(() => {
+      router.replace(next, { scroll: false });
+    });
+  }, [category, featuredOnly, pathname, router, searchParams]);
 
   const priceCeiling = useMemo(() => {
     return Math.max(...products.map((p) => p.priceCents), 0);

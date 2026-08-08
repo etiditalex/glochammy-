@@ -9,7 +9,23 @@ function copyResponseCookies(from: NextResponse, to: NextResponse) {
   });
 }
 
+function needsAuthSession(pathname: string) {
+  return (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/account") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/cart")
+  );
+}
+
 export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+
+  // Skip auth work on public marketing/catalog traffic (biggest TTFB win).
+  if (!needsAuthSession(path)) {
+    return NextResponse.next();
+  }
+
   const requestHeaders = new Headers(request.headers);
   let supabaseResponse = NextResponse.next({
     request: { headers: requestHeaders },
@@ -43,7 +59,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
   const isAdminLogin = path === "/admin/login" || path.startsWith("/admin/login/");
   if (path.startsWith("/admin")) {
     if (isAdminLogin) {
@@ -85,6 +100,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/admin/:path*",
+    "/account/:path*",
+    "/auth/:path*",
+    "/cart",
+    "/cart/:path*",
   ],
 };

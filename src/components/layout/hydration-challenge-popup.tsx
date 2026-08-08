@@ -8,8 +8,11 @@ import {
 import { X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useId, useState } from "react";
+
+const STORAGE_KEY = "glochammy-hydration-challenge-dismissed";
+/** Delay so LCP / first interaction aren't blocked by the promo. */
+const OPEN_DELAY_MS = 3500;
 
 const MOSAIC = {
   large: {
@@ -26,26 +29,37 @@ const MOSAIC = {
   },
 } as const;
 
+function wasDismissedThisSession(): boolean {
+  try {
+    return sessionStorage.getItem(STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markDismissedThisSession() {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, "1");
+  } catch {
+    /* private mode / blocked storage */
+  }
+}
+
 export function HydrationChallengePopup() {
-  const pathname = usePathname();
   const reduce = useReducedMotion();
   const titleId = useId();
-  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
 
   const dismiss = useCallback(() => {
+    markDismissedThisSession();
     setOpen(false);
   }, []);
 
   useEffect(() => {
-    setMounted(true);
+    if (wasDismissedThisSession()) return;
+    const id = window.setTimeout(() => setOpen(true), OPEN_DELAY_MS);
+    return () => window.clearTimeout(id);
   }, []);
-
-  /** Show again on every page (route) the user visits */
-  useEffect(() => {
-    if (!mounted) return;
-    setOpen(true);
-  }, [mounted, pathname]);
 
   useEffect(() => {
     if (!open) return;
@@ -65,15 +79,13 @@ export function HydrationChallengePopup() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, dismiss]);
 
-  if (!mounted) return null;
-
   const panelEase = [0.22, 1, 0.36, 1] as const;
 
   return (
     <AnimatePresence>
       {open ? (
         <motion.div
-          key={`hydration-challenge-popup-${pathname}`}
+          key="hydration-challenge-popup"
           className="print:hidden fixed inset-0 z-[200] flex items-center justify-center px-4 py-8"
           initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -119,7 +131,6 @@ export function HydrationChallengePopup() {
                     fill
                     className="object-cover"
                     sizes="(min-width: 512px) 256px, 45vw"
-                    priority
                   />
                 </div>
                 <div className="relative h-full min-h-0 overflow-hidden bg-cream">
@@ -170,4 +181,3 @@ export function HydrationChallengePopup() {
     </AnimatePresence>
   );
 }
-

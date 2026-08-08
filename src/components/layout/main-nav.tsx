@@ -2,9 +2,6 @@
 
 import { useCart } from "@/context/cart-context";
 import { BRAND } from "@/lib/constants";
-import { AboutYourSkinMegaMenu } from "@/components/layout/about-your-skin-mega-menu";
-import { ShopMegaMenu } from "@/components/layout/shop-mega-menu";
-import { UniverseMegaMenu } from "@/components/layout/universe-mega-menu";
 import {
   MapPin,
   Menu,
@@ -13,10 +10,31 @@ import {
   User,
   X,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+
+const AboutYourSkinMegaMenu = dynamic(
+  () =>
+    import("@/components/layout/about-your-skin-mega-menu").then(
+      (m) => m.AboutYourSkinMegaMenu,
+    ),
+  { ssr: false },
+);
+const ShopMegaMenu = dynamic(
+  () =>
+    import("@/components/layout/shop-mega-menu").then((m) => m.ShopMegaMenu),
+  { ssr: false },
+);
+const UniverseMegaMenu = dynamic(
+  () =>
+    import("@/components/layout/universe-mega-menu").then(
+      (m) => m.UniverseMegaMenu,
+    ),
+  { ssr: false },
+);
 
 const primaryLinks: { label: string; href: string }[] = [
   { label: "Book a treatment", href: "/booking" },

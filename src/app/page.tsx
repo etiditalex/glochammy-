@@ -5,7 +5,7 @@ import { Newsletter } from "@/components/home/newsletter";
 import { SalonPreview } from "@/components/home/salon-preview";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { BRAND } from "@/lib/constants";
-import { getFeaturedProducts, getShopProducts } from "@/lib/products/catalog";
+import { getShopProducts } from "@/lib/products/catalog";
 import { salonServices } from "@/lib/data/services";
 import { testimonials } from "@/lib/data/testimonials";
 import type { Metadata } from "next";
@@ -18,10 +18,8 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [featured, shopProducts] = await Promise.all([
-    getFeaturedProducts(),
-    getShopProducts(),
-  ]);
+  const shopProducts = await getShopProducts();
+  const featured = shopProducts.filter((p) => p.featured).slice(0, 8);
   const hairDeals = shopProducts
     .filter((p) => {
       const category = p.category.toLowerCase();

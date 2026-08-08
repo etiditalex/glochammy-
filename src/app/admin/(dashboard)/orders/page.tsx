@@ -1,6 +1,4 @@
-import type { OrderStatus } from "@/app/actions/admin";
 import { OrdersAutoRefresh } from "@/components/admin/orders-auto-refresh";
-import { OrderStatusPicker } from "@/components/admin/order-status-picker";
 import { formatMoney } from "@/lib/format";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -22,8 +20,8 @@ export default async function AdminOrdersPage() {
         <h1 className="font-display text-3xl text-ink">Order list</h1>
         <p className="mt-2 text-sm text-muted">
           Orders created when customers complete checkout from the cart. Guest orders match by
-          email; signed-in customers are linked to their account. Use the status menu on each row to
-          move orders through fulfillment (for example paid → processing → shipped → delivered).
+          email; signed-in customers are linked to their account. Status updates automatically from
+          payment events and realtime refresh.
         </p>
       </div>
 
@@ -60,10 +58,9 @@ export default async function AdminOrdersPage() {
                     {formatMoney(o.total_cents as number, o.currency as string)}
                   </td>
                   <td className="px-3 py-3 align-top">
-                    <OrderStatusPicker
-                      orderId={o.id as string}
-                      current={o.status as OrderStatus}
-                    />
+                    <span className="inline-flex rounded border border-line bg-subtle px-2 py-1 text-2xs uppercase tracking-nav text-ink">
+                      {String(o.status)}
+                    </span>
                   </td>
                   <td className="px-3 py-3 whitespace-nowrap text-xs text-muted">
                     {o.created_at
