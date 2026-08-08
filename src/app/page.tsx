@@ -1,11 +1,14 @@
+import { FeaturedProductHighlights } from "@/components/home/featured-product-highlights";
 import { FeaturedProducts } from "@/components/home/featured-products";
 import { HairWigsDeals } from "@/components/home/hair-wigs-deals";
 import { Hero } from "@/components/home/hero";
+import { HeroTagline } from "@/components/home/hero-tagline";
 import { Newsletter } from "@/components/home/newsletter";
 import { SalonPreview } from "@/components/home/salon-preview";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { BRAND } from "@/lib/constants";
 import { getShopProducts } from "@/lib/products/catalog";
+import { getProductCategories } from "@/lib/products/categories";
 import { salonServices } from "@/lib/data/services";
 import { testimonials } from "@/lib/data/testimonials";
 import type { Metadata } from "next";
@@ -18,8 +21,18 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const shopProducts = await getShopProducts();
-  const featured = shopProducts.filter((p) => p.featured).slice(0, 8);
+  const [shopProducts, categories] = await Promise.all([
+    getShopProducts(),
+    getProductCategories(),
+  ]);
+  const featuredOnly = shopProducts.filter((p) => p.featured);
+  const featured =
+    featuredOnly.length >= 6
+      ? featuredOnly.slice(0, 18)
+      : [...featuredOnly, ...shopProducts.filter((p) => !p.featured)].slice(
+          0,
+          18,
+        );
   const hairDeals = shopProducts
     .filter((p) => {
       const category = p.category.toLowerCase();
@@ -29,9 +42,15 @@ export default async function HomePage() {
     .sort((a, b) => a.priceCents - b.priceCents)
     .slice(0, 8);
 
+  const staffPicks = (
+    featuredOnly.length ? featuredOnly : shopProducts
+  ).slice(0, 8);
+
   return (
     <>
-      <Hero />
+      <Hero categories={categories} staffPicks={staffPicks} />
+      <FeaturedProductHighlights products={featured} />
+      <HeroTagline />
       <FeaturedProducts products={featured} />
       <SalonPreview services={salonServices} />
       <HairWigsDeals products={hairDeals} />

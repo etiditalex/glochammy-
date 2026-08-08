@@ -13,18 +13,26 @@ type ProductCardProps = {
   priority?: boolean;
   /** Full-bleed grid: no card border (use with gap-px grid gutters). */
   flush?: boolean;
+  /** Override next/image sizes when the card lives in a denser layout. */
+  imageSizes?: string;
 };
 
 export function ProductCard({
   product,
   priority = false,
   flush = false,
+  imageSizes,
 }: ProductCardProps) {
   const { addItem } = useCart();
   const cover = product.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL;
   const frame = flush ? "" : "border border-line";
   const availableStock = Math.max(0, product.stockQuantity ?? 0);
   const isOutOfStock = availableStock <= 0;
+  const sizes =
+    imageSizes ??
+    (flush
+      ? "(min-width: 1024px) 26vw, (min-width: 640px) 50vw, 50vw"
+      : "(min-width: 1280px) 20vw, (min-width: 1024px) 22vw, (min-width: 640px) 45vw, 50vw");
 
   return (
     <article
@@ -39,11 +47,7 @@ export function ProductCard({
             src={cover}
             alt={product.name}
             fill
-            sizes={
-              flush
-                ? "(min-width: 1024px) 26vw, (min-width: 640px) 50vw, 50vw"
-                : "(min-width: 1280px) 20vw, (min-width: 1024px) 22vw, (min-width: 640px) 45vw, 50vw"
-            }
+            sizes={sizes}
             className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             priority={priority}
           />
