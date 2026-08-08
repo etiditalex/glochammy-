@@ -3,7 +3,6 @@ import { FeaturedProducts } from "@/components/home/featured-products";
 import { HairWigsDeals } from "@/components/home/hair-wigs-deals";
 import { Hero } from "@/components/home/hero";
 import { HeroTagline } from "@/components/home/hero-tagline";
-import { Newsletter } from "@/components/home/newsletter";
 import { SalonPreview } from "@/components/home/salon-preview";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { BRAND } from "@/lib/constants";
@@ -12,6 +11,17 @@ import { getProductCategories } from "@/lib/products/categories";
 import { salonServices } from "@/lib/data/services";
 import { testimonials } from "@/lib/data/testimonials";
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
+
+/** Client form — split so its JS isn't in the critical hero path. */
+const Newsletter = dynamic(
+  () => import("@/components/home/newsletter").then((m) => m.Newsletter),
+  {
+    loading: () => (
+      <div className="h-36 animate-pulse bg-subtle" aria-hidden />
+    ),
+  },
+);
 
 export const metadata: Metadata = {
   title: "Home",
@@ -28,10 +38,10 @@ export default async function HomePage() {
   const featuredOnly = shopProducts.filter((p) => p.featured);
   const featured =
     featuredOnly.length >= 6
-      ? featuredOnly.slice(0, 18)
+      ? featuredOnly.slice(0, 12)
       : [...featuredOnly, ...shopProducts.filter((p) => !p.featured)].slice(
           0,
-          18,
+          12,
         );
   const hairDeals = shopProducts
     .filter((p) => {
@@ -40,11 +50,11 @@ export default async function HomePage() {
       return category.includes("hair") || name.includes("wig");
     })
     .sort((a, b) => a.priceCents - b.priceCents)
-    .slice(0, 8);
+    .slice(0, 6);
 
   const staffPicks = (
     featuredOnly.length ? featuredOnly : shopProducts
-  ).slice(0, 8);
+  ).slice(0, 4);
 
   return (
     <>

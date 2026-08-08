@@ -1,8 +1,9 @@
 "use client";
 
+import { useAutoplayWhenVisible, usePrefersReducedMotion } from "@/hooks/use-autoplay-when-visible";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, type TouchEvent } from "react";
+import { useCallback, useRef, useState, type TouchEvent } from "react";
 
 export type MarketplaceBannerSlide = {
   src: string;
@@ -17,41 +18,44 @@ type HeroBannerSliderProps = {
 
 export function HeroBannerSlider({
   slides,
-  intervalMs = 5500,
+  intervalMs = 6000,
 }: HeroBannerSliderProps) {
   const [index, setIndex] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(false);
   const [activated, setActivated] = useState<Set<number>>(() => new Set([0]));
+  const rootRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
 
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReducedMotion(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  useEffect(() => {
-    setActivated((prev) => {
-      if (prev.has(index)) return prev;
-      const next = new Set(prev);
-      next.add(index);
+  const advance = useCallback(() => {
+    setIndex((i) => {
+      const next = (i + 1) % slides.length;
+      setActivated((prev) => {
+        if (prev.has(next)) return prev;
+        const copy = new Set(prev);
+        copy.add(next);
+        return copy;
+      });
       return next;
     });
-  }, [index]);
+  }, [slides.length]);
 
-  useEffect(() => {
-    if (slides.length < 2 || reducedMotion) return;
-    const id = window.setInterval(() => {
-      setIndex((i) => (i + 1) % slides.length);
-    }, intervalMs);
-    return () => window.clearInterval(id);
-  }, [slides.length, intervalMs, reducedMotion]);
+  useAutoplayWhenVisible(
+    rootRef,
+    slides.length > 1 && !reducedMotion,
+    intervalMs,
+    advance,
+  );
 
   const go = useCallback(
     (i: number) => {
-      setIndex(((i % slides.length) + slides.length) % slides.length);
+      const next = ((i % slides.length) + slides.length) % slides.length;
+      setIndex(next);
+      setActivated((prev) => {
+        if (prev.has(next)) return prev;
+        const copy = new Set(prev);
+        copy.add(next);
+        return copy;
+      });
     },
     [slides.length],
   );
@@ -78,6 +82,7 @@ export function HeroBannerSlider({
 
   return (
     <div
+      ref={rootRef}
       className="relative aspect-[2/1] w-full overflow-hidden bg-cream sm:aspect-[21/9] lg:aspect-[2/1] xl:aspect-[21/9]"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
@@ -91,7 +96,8 @@ export function HeroBannerSlider({
             alt={slide.alt}
             fill
             priority={i === 0}
-            sizes="(min-width: 1280px) 70vw, (min-width: 1024px) 60vw, 100vw"
+            sizes="(min-width: 1280px) 55vw, (min-width: 1024px) 60vw, 100vw"
+            quality={i === 0 ? 75 : 65}
             className={`object-contain object-center transition-opacity duration-500 ease-out motion-reduce:transition-none ${
               i === index ? "z-[1] opacity-100" : "z-0 opacity-0"
             }`}
@@ -127,7 +133,7 @@ export function HeroBannerSlider({
             >
               <span
                 className={`block h-2 rounded-full shadow-sm transition-[width,background-color] duration-300 motion-reduce:transition-none ${
-                  i === index ? "w-7 bg-accent" : "w-2 bg-ink/35 hover:bg-ink/55"
+                  i === index ? "w-7 bg-accent" : "w-2 bg-ink/35"
                 }`}
               />
             </button>

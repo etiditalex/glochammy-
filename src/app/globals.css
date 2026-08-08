@@ -82,8 +82,41 @@ iframe {
   animation: page-enter 0.2s ease-out;
 }
 
+@keyframes trust-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.trust-marquee {
+  animation: trust-marquee 28s linear infinite;
+}
+
+.mask-trust-fade {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-enter {
+    animation: none;
+  }
+  .trust-marquee {
     animation: none;
   }
 }

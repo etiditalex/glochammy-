@@ -1,10 +1,11 @@
 "use client";
 
 import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
+import { useAutoplayWhenVisible, usePrefersReducedMotion } from "@/hooks/use-autoplay-when-visible";
 import type { Product } from "@/lib/types/commerce";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, type TouchEvent } from "react";
+import { useCallback, useRef, useState, type TouchEvent } from "react";
 
 type HeroStaffPicksAdProps = {
   products: Product[];
@@ -13,42 +14,45 @@ type HeroStaffPicksAdProps = {
 
 export function HeroStaffPicksAd({
   products,
-  intervalMs = 4000,
+  intervalMs = 4500,
 }: HeroStaffPicksAdProps) {
-  const list = products.slice(0, 6);
+  const list = products.slice(0, 4);
   const [index, setIndex] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(false);
   const [activated, setActivated] = useState<Set<number>>(() => new Set([0]));
+  const rootRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
 
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReducedMotion(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  useEffect(() => {
-    setActivated((prev) => {
-      if (prev.has(index)) return prev;
-      const next = new Set(prev);
-      next.add(index);
+  const advance = useCallback(() => {
+    setIndex((i) => {
+      const next = (i + 1) % list.length;
+      setActivated((prev) => {
+        if (prev.has(next)) return prev;
+        const copy = new Set(prev);
+        copy.add(next);
+        return copy;
+      });
       return next;
     });
-  }, [index]);
+  }, [list.length]);
 
-  useEffect(() => {
-    if (list.length < 2 || reducedMotion) return;
-    const id = window.setInterval(() => {
-      setIndex((i) => (i + 1) % list.length);
-    }, intervalMs);
-    return () => window.clearInterval(id);
-  }, [list.length, intervalMs, reducedMotion]);
+  useAutoplayWhenVisible(
+    rootRef,
+    list.length > 1 && !reducedMotion,
+    intervalMs,
+    advance,
+  );
 
   const go = useCallback(
     (i: number) => {
-      setIndex(((i % list.length) + list.length) % list.length);
+      const next = ((i % list.length) + list.length) % list.length;
+      setIndex(next);
+      setActivated((prev) => {
+        if (prev.has(next)) return prev;
+        const copy = new Set(prev);
+        copy.add(next);
+        return copy;
+      });
     },
     [list.length],
   );
@@ -73,7 +77,7 @@ export function HeroStaffPicksAd({
     return (
       <Link
         href="/shop?featured=1"
-        className="flex aspect-[4/3] w-full items-center justify-center bg-ink px-5 py-5 text-white transition-opacity hover:opacity-95 lg:aspect-auto lg:min-h-0 lg:flex-1"
+        className="flex aspect-[4/3] w-full items-center justify-center bg-ink px-5 py-5 text-white lg:aspect-auto lg:min-h-0 lg:flex-1"
       >
         <span className="font-display text-2xl leading-tight">New arrivals</span>
       </Link>
@@ -84,6 +88,7 @@ export function HeroStaffPicksAd({
 
   return (
     <div
+      ref={rootRef}
       className="relative aspect-[4/3] w-full overflow-hidden border border-line bg-ink lg:aspect-auto lg:min-h-0 lg:flex-1"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
@@ -97,7 +102,8 @@ export function HeroStaffPicksAd({
             src={src}
             alt=""
             fill
-            sizes="(min-width: 1024px) 260px, (min-width: 640px) 50vw, 100vw"
+            sizes="(min-width: 1024px) 260px, (min-width: 640px) 45vw, 100vw"
+            quality={60}
             className={`object-cover transition-opacity duration-500 ease-out motion-reduce:transition-none ${
               i === index ? "z-[1] opacity-100" : "z-0 opacity-0"
             }`}
@@ -114,7 +120,7 @@ export function HeroStaffPicksAd({
 
       {list.length > 1 ? (
         <div
-          className="absolute inset-x-0 bottom-2 z-[3] flex justify-center gap-0.5 sm:bottom-3"
+          className="absolute inset-x-0 bottom-2 z-[3] flex justify-center gap-0.5"
           role="tablist"
           aria-label="Staff pick ads"
         >
