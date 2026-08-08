@@ -99,9 +99,9 @@ export function Hero({ categories, staffPicks }: HeroProps) {
       aria-label="Shop homepage"
     >
       <div className="w-full min-w-0 px-2 py-2 sm:px-3 sm:py-3 lg:px-4 lg:py-4">
-        <div className="grid min-w-0 grid-cols-1 gap-2 sm:gap-3 lg:grid-cols-[220px_minmax(0,1fr)_240px] xl:grid-cols-[240px_minmax(0,1fr)_260px]">
+        <div className="grid min-w-0 grid-cols-1 items-start gap-2 sm:gap-3 lg:grid-cols-[220px_minmax(0,1fr)_240px] xl:grid-cols-[240px_minmax(0,1fr)_260px]">
           {/* Banner first on mobile for LCP */}
-          <div className="order-1 overflow-hidden border border-line bg-ink lg:order-2 lg:row-span-1">
+          <div className="order-1 w-full overflow-hidden border border-line bg-cream lg:order-2">
             <HeroBannerSlider slides={[...BANNER_SLIDES]} />
           </div>
 
@@ -158,7 +158,7 @@ export function Hero({ categories, staffPicks }: HeroProps) {
           </div>
 
           {/* Utilities + staff picks */}
-          <div className="order-3 flex min-w-0 flex-col gap-2 sm:gap-3 lg:order-3">
+          <div className="order-3 flex min-w-0 flex-col gap-2 self-stretch sm:gap-3 lg:order-3 lg:min-h-full">
             <div className="grid grid-cols-3 gap-2 lg:hidden">
               {quickActions.map((action) => {
                 const Icon = action.icon;

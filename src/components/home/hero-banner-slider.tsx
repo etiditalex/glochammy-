@@ -78,7 +78,7 @@ export function HeroBannerSlider({
 
   return (
     <div
-      className="relative aspect-[16/10] w-full overflow-hidden bg-ink sm:aspect-[16/9] lg:aspect-auto lg:h-full lg:min-h-[340px] xl:min-h-[380px]"
+      className="relative aspect-[2/1] w-full overflow-hidden bg-cream sm:aspect-[21/9] lg:aspect-[2/1] xl:aspect-[21/9]"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -92,7 +92,7 @@ export function HeroBannerSlider({
             fill
             priority={i === 0}
             sizes="(min-width: 1280px) 70vw, (min-width: 1024px) 60vw, 100vw"
-            className={`object-cover object-center transition-opacity duration-500 ease-out motion-reduce:transition-none ${
+            className={`object-contain object-center transition-opacity duration-500 ease-out motion-reduce:transition-none ${
               i === index ? "z-[1] opacity-100" : "z-0 opacity-0"
             }`}
             aria-hidden={i !== index}
@@ -110,7 +110,7 @@ export function HeroBannerSlider({
 
       {slides.length > 1 ? (
         <div
-          className="absolute inset-x-0 bottom-3 z-[3] flex justify-center gap-1 sm:bottom-4 sm:gap-2"
+          className="absolute inset-x-0 bottom-2 z-[3] flex justify-center gap-1 sm:bottom-3 sm:gap-2"
           role="tablist"
           aria-label="Promotional banners"
         >
@@ -126,8 +126,8 @@ export function HeroBannerSlider({
               className="flex h-8 min-w-8 items-center justify-center"
             >
               <span
-                className={`block h-2 rounded-full transition-[width,background-color] duration-300 motion-reduce:transition-none ${
-                  i === index ? "w-7 bg-white" : "w-2 bg-white/45"
+                className={`block h-2 rounded-full shadow-sm transition-[width,background-color] duration-300 motion-reduce:transition-none ${
+                  i === index ? "w-7 bg-accent" : "w-2 bg-ink/35 hover:bg-ink/55"
                 }`}
               />
             </button>
