@@ -2,7 +2,6 @@ import { FeaturedProductHighlights } from "@/components/home/featured-product-hi
 import { FeaturedProducts } from "@/components/home/featured-products";
 import { HairWigsDeals } from "@/components/home/hair-wigs-deals";
 import { Hero } from "@/components/home/hero";
-import { HeroTagline } from "@/components/home/hero-tagline";
 import { SalonPreview } from "@/components/home/salon-preview";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { BRAND } from "@/lib/constants";
@@ -52,15 +51,10 @@ export default async function HomePage() {
     .sort((a, b) => a.priceCents - b.priceCents)
     .slice(0, 6);
 
-  const staffPicks = (
-    featuredOnly.length ? featuredOnly : shopProducts
-  ).slice(0, 4);
-
   return (
     <>
-      <Hero categories={categories} staffPicks={staffPicks} />
+      <Hero categories={categories} />
       <FeaturedProductHighlights products={featured} />
-      <HeroTagline />
       <FeaturedProducts products={featured} />
       <SalonPreview services={salonServices} />
       <HairWigsDeals products={hairDeals} />

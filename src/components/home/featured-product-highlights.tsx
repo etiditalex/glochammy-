@@ -1,75 +1,136 @@
+"use client";
+
 import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
+import { formatMoney } from "@/lib/format";
 import type { Product } from "@/lib/types/commerce";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type FeaturedProductHighlightsProps = {
   products: Product[];
 };
 
-/** Soft Glochammy bronze / cream diagonals. */
-const CIRCLE_TONES = [
-  { stripe: "#8b6f4a", field: "#faf9f7" },
-  { stripe: "#a68968", field: "#f6f5f3" },
-  { stripe: "#6f583a", field: "#faf9f7" },
-  { stripe: "#9a8060", field: "#ffffff" },
-  { stripe: "#8b6f4a", field: "#f0ede8" },
-  { stripe: "#b39a7a", field: "#faf9f7" },
-] as const;
-
 export function FeaturedProductHighlights({
   products,
 }: FeaturedProductHighlightsProps) {
-  /** Cap DOM image count — CSS still hides some on smaller breakpoints. */
   const highlights = products.slice(0, 12);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+
+  const syncControls = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setCanPrev(el.scrollLeft > 24);
+    setCanNext(el.scrollLeft < max - 24);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    syncControls();
+    el.addEventListener("scroll", syncControls, { passive: true });
+    const ro = new ResizeObserver(syncControls);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", syncControls);
+      ro.disconnect();
+    };
+  }, [syncControls, highlights.length]);
+
+  const scrollByPage = useCallback((dir: -1 | 1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: el.clientWidth * 0.8 * dir, behavior: "smooth" });
+  }, []);
+
   if (!highlights.length) return null;
+
+  const arrowClass =
+    "absolute top-[7.5rem] z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink shadow-[0_1px_4px_rgba(20,18,15,0.18)] transition-opacity duration-200 motion-reduce:transition-none md:flex";
 
   return (
     <section
-      className="w-full border-b border-line bg-subtle py-8 sm:py-12 lg:py-16"
-      aria-label="Featured product highlights"
+      className="w-full bg-cream px-2 pb-3 pt-2"
+      aria-labelledby="top-selling-heading"
     >
-      <div className="w-full min-w-0 px-3 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-3 gap-x-2 gap-y-6 sm:grid-cols-4 sm:gap-x-5 sm:gap-y-10 lg:grid-cols-6 lg:gap-x-6 lg:gap-y-12">
-          {highlights.map((product, i) => {
-            const tone = CIRCLE_TONES[i % CIRCLE_TONES.length]!;
-            const cover = product.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL;
-            return (
-              <Link
-                key={product.id}
-                href={`/shop/${product.slug}`}
-                className={`group flex min-w-0 flex-col items-center text-center outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 ${
-                  i >= 8
-                    ? "hidden lg:flex"
-                    : i >= 6
-                      ? "hidden sm:flex"
-                      : ""
-                }`}
-              >
-                <span
-                  className="relative aspect-square w-full max-w-[5.75rem] overflow-hidden rounded-full shadow-sm transition-transform duration-300 ease-out group-hover:scale-[1.03] active:scale-[0.98] motion-reduce:transition-none motion-reduce:group-hover:scale-100 min-[400px]:max-w-[7rem] sm:max-w-[11rem] lg:max-w-[12.5rem]"
-                  style={{
-                    background: `linear-gradient(135deg, ${tone.field} 0%, ${tone.field} 42%, ${tone.stripe} 42%, ${tone.stripe} 100%)`,
-                  }}
-                >
-                  <span className="absolute inset-[10%] sm:inset-[12%]">
-                    <Image
-                      src={cover}
-                      alt={product.name}
-                      fill
-                      sizes="(min-width: 1024px) 12vw, (min-width: 640px) 18vw, 30vw"
-                      quality={60}
-                      className="object-contain p-0.5 drop-shadow-sm sm:p-1"
-                      loading="lazy"
-                    />
-                  </span>
-                </span>
-                <span className="mt-2 line-clamp-2 max-w-[7.5rem] text-[11px] font-medium leading-snug text-ink sm:mt-3 sm:max-w-[11rem] sm:text-sm">
-                  {product.name}
-                </span>
-              </Link>
-            );
-          })}
+      <div className="mx-auto max-w-[1248px] md:px-3">
+        <div className="rounded-2xl bg-subtle pb-2.5">
+          <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-4">
+            <h2
+              id="top-selling-heading"
+              className="min-w-0 truncate text-[22px] font-bold leading-none text-accent sm:text-[32px]"
+            >
+              Top selling items
+            </h2>
+            <Link
+              href="/shop"
+              className="inline-flex h-10 shrink-0 items-center rounded-full bg-accent px-6 text-sm text-cream hover:bg-[#6f583a]"
+            >
+              See All
+            </Link>
+          </div>
+
+          <div className="group relative">
+            <div
+              ref={scrollerRef}
+              className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain scroll-smooth px-3 touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              role="region"
+              aria-label="Top selling items"
+              tabIndex={0}
+            >
+              {highlights.map((product, i) => {
+                const cover = product.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL;
+                return (
+                  <Link
+                    key={product.id}
+                    href={`/shop/${product.slug}`}
+                    className="flex w-[168px] shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-line bg-white sm:w-[186px]"
+                  >
+                    <span className="relative block aspect-square w-full bg-white">
+                      <Image
+                        src={cover}
+                        alt=""
+                        fill
+                        sizes="186px"
+                        quality={60}
+                        priority={i < 2}
+                        className="object-contain"
+                      />
+                    </span>
+                    <span className="line-clamp-2 px-2 pt-2 text-sm leading-[1.4] text-muted">
+                      {product.name}
+                    </span>
+                    <span className="px-2 pb-3 pt-1 text-lg font-medium leading-none text-accent">
+                      {formatMoney(product.priceCents, product.currency)}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              aria-label="Previous products"
+              disabled={!canPrev}
+              onClick={() => scrollByPage(-1)}
+              className={`${arrowClass} left-1 disabled:pointer-events-none disabled:opacity-0`}
+            >
+              <ChevronLeft className="h-6 w-6" strokeWidth={1.75} aria-hidden />
+            </button>
+            <button
+              type="button"
+              aria-label="Next products"
+              disabled={!canNext}
+              onClick={() => scrollByPage(1)}
+              className={`${arrowClass} right-1 disabled:pointer-events-none disabled:opacity-0`}
+            >
+              <ChevronRight className="h-6 w-6" strokeWidth={1.75} aria-hidden />
+            </button>
+          </div>
         </div>
       </div>
     </section>
