@@ -1,8 +1,10 @@
 "use client";
 
+import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import type { Product } from "@/lib/types/commerce";
 import { formatMoney } from "@/lib/format";
-import { ProductCard } from "@/components/product/product-card";
+import Image from "next/image";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useEffect, useMemo, useState } from "react";
 
@@ -173,11 +175,35 @@ export function ShopFilters({
           No products match these filters. Try widening your selection.
         </p>
       ) : (
-        <div className="w-full px-2 py-10 sm:px-4 lg:px-6 xl:px-8">
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5 lg:gap-4 xl:gap-5">
-            {filtered.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+        <div className="w-full bg-cream px-2 py-3 sm:px-4 lg:px-6 xl:px-8">
+          <div className="mx-auto grid max-w-[1248px] grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {filtered.map((product) => {
+              const cover = product.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL;
+              return (
+                <Link
+                  key={product.id}
+                  href={`/shop/${product.slug}`}
+                  className="flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white"
+                >
+                  <span className="relative block aspect-square w-full bg-white">
+                    <Image
+                      src={cover}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1280px) 220px, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                      quality={60}
+                      className="object-contain"
+                    />
+                  </span>
+                  <span className="line-clamp-2 px-2 pt-2 text-sm leading-[1.4] text-muted">
+                    {product.name}
+                  </span>
+                  <span className="mt-auto px-2 pb-3 pt-1 text-lg font-medium leading-none text-accent">
+                    {formatMoney(product.priceCents, product.currency)}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       )}

@@ -12,14 +12,13 @@ export default function ShopLoading() {
             <div key={i} className="h-10 w-20 animate-pulse bg-line" />
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-4 py-10 sm:gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 py-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="animate-pulse space-y-3 border border-line bg-white p-0">
+            <div key={i} className="animate-pulse overflow-hidden rounded-xl border border-line bg-white">
               <div className="aspect-square bg-subtle" />
-              <div className="space-y-2 p-5">
+              <div className="space-y-2 px-2 pb-3 pt-2">
                 <div className="h-4 w-3/4 bg-line" />
-                <div className="h-3 w-full bg-line/70" />
-                <div className="h-3 w-1/2 bg-line/70" />
+                <div className="h-5 w-1/3 bg-line/70" />
               </div>
             </div>
           ))}
