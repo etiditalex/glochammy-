@@ -2,13 +2,12 @@ import { FeaturedProductHighlights } from "@/components/home/featured-product-hi
 import { FeaturedProducts } from "@/components/home/featured-products";
 import { HairWigsDeals } from "@/components/home/hair-wigs-deals";
 import { Hero } from "@/components/home/hero";
+import { ProductSpotlightBanner } from "@/components/home/product-spotlight-banner";
 import { SalonPreview } from "@/components/home/salon-preview";
-import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { BRAND } from "@/lib/constants";
 import { getShopProducts } from "@/lib/products/catalog";
 import { getProductCategories } from "@/lib/products/categories";
 import { salonServices } from "@/lib/data/services";
-import { testimonials } from "@/lib/data/testimonials";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 
@@ -52,14 +51,18 @@ export default async function HomePage() {
     .slice(0, 6);
 
   return (
-    <>
+    <div className="bg-cream">
       <Hero categories={categories} />
       <FeaturedProductHighlights products={featured} />
       <FeaturedProducts products={featured} />
       <SalonPreview services={salonServices} />
+      <section className="w-full bg-cream px-2 py-2" aria-label="Featured promotion">
+        <div className="mx-auto max-w-[1248px] md:px-3">
+          <ProductSpotlightBanner />
+        </div>
+      </section>
       <HairWigsDeals products={hairDeals} />
-      <TestimonialsSection items={testimonials} />
       <Newsletter />
-    </>
+    </div>
   );
 }

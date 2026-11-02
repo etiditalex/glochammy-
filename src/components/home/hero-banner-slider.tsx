@@ -80,12 +80,12 @@ export function HeroBannerSlider({
 
   const active = slides[index]!;
   const arrowClass =
-    "absolute top-1/2 z-[4] hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-[#313133] shadow-[0_1px_4px_rgba(0,0,0,0.18)] transition-opacity duration-200 motion-reduce:transition-none md:flex md:opacity-0 md:pointer-events-none md:group-hover:pointer-events-auto md:group-hover:opacity-100 md:group-focus-within:pointer-events-auto md:group-focus-within:opacity-100";
+    "absolute top-1/2 z-[4] hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink shadow-[0_1px_4px_rgba(20,18,15,0.18)] transition-opacity duration-200 motion-reduce:transition-none md:flex md:opacity-0 md:pointer-events-none md:group-hover:pointer-events-auto md:group-hover:opacity-100 md:group-focus-within:pointer-events-auto md:group-focus-within:opacity-100";
 
   return (
     <div ref={rootRef} className="group relative">
       <div
-        className="relative aspect-[12/5] w-full overflow-hidden rounded-2xl bg-[#e8e8e9]"
+        className="relative aspect-[12/5] w-full overflow-hidden rounded-2xl bg-subtle"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
@@ -136,8 +136,8 @@ export function HeroBannerSlider({
                 <span
                   className={`block rounded-full transition-[width,height,background-color,box-shadow] duration-200 motion-reduce:transition-none ${
                     i === index
-                      ? "h-2 w-[18px] bg-[#313133] shadow-none"
-                      : "h-1 w-1 bg-transparent shadow-[0_0_0_2px_#313133]"
+                      ? "h-2 w-[18px] bg-ink shadow-none"
+                      : "h-1 w-1 bg-transparent shadow-[0_0_0_2px_#14120f]"
                   }`}
                 />
               </button>

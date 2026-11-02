@@ -62,7 +62,7 @@ export function Hero({ categories }: HeroProps) {
   const navItems = [...categoryLinks, ...EXTRA_NAV];
 
   return (
-    <section className="w-full bg-[#f1f1f2]" aria-label="Shop homepage">
+    <section className="w-full bg-cream" aria-label="Shop homepage">
       <nav aria-label="Shop categories" className="bg-white">
         <div className="mx-auto flex max-w-[1248px] touch-pan-x gap-0 overflow-x-auto overscroll-x-contain px-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {navItems.map((item) => {
@@ -71,10 +71,10 @@ export function Hero({ categories }: HeroProps) {
               <Link
                 key={item.href + item.label}
                 href={item.href}
-                className="my-0.5 inline-flex shrink-0 items-center whitespace-nowrap px-1.5 py-1.5 text-base font-normal text-[#313133] hover:bg-[#f1f1f2]"
+                className="my-0.5 inline-flex shrink-0 items-center whitespace-nowrap px-1.5 py-1.5 text-base font-normal text-ink hover:bg-subtle"
               >
                 <Icon
-                  className="mr-1.5 h-5 w-5 shrink-0 text-[#535357]"
+                  className="mr-1.5 h-5 w-5 shrink-0 text-muted"
                   strokeWidth={1.75}
                   aria-hidden
                 />
