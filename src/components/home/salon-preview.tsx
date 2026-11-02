@@ -4,6 +4,7 @@ import { BRAND } from "@/lib/constants";
 import { formatMoney } from "@/lib/format";
 import type { SalonService } from "@/lib/types/commerce";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -47,7 +48,7 @@ export function SalonPreview({ services }: SalonPreviewProps) {
   if (!preview.length) return null;
 
   const arrowClass =
-    "absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink shadow-[0_1px_4px_rgba(20,18,15,0.18)] transition-opacity duration-200 motion-reduce:transition-none md:flex";
+    "absolute top-[7.5rem] z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink shadow-[0_1px_4px_rgba(20,18,15,0.18)] transition-opacity duration-200 motion-reduce:transition-none md:flex";
 
   return (
     <section className="w-full bg-cream px-2 pb-3 pt-2" aria-labelledby="salon-heading">
@@ -86,18 +87,25 @@ export function SalonPreview({ services }: SalonPreviewProps) {
                 <Link
                   key={service.id}
                   href="/salon"
-                  className="flex w-[200px] shrink-0 snap-start flex-col rounded-xl border border-line bg-subtle p-3 sm:w-[220px]"
+                  className="flex w-[168px] shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-line bg-white sm:w-[186px]"
                 >
-                  <span className="line-clamp-2 text-sm leading-[1.4] text-ink">
+                  <span className="relative block aspect-square w-full bg-subtle">
+                    <Image
+                      src={service.image}
+                      alt=""
+                      fill
+                      sizes="186px"
+                      quality={60}
+                      className="object-cover"
+                    />
+                  </span>
+                  <span className="line-clamp-2 px-2 pt-2 text-sm leading-[1.4] text-ink">
                     {service.name}
                   </span>
-                  <span className="mt-2 line-clamp-3 text-sm leading-[1.4] text-muted">
+                  <span className="line-clamp-3 px-2 pt-1 text-sm leading-[1.4] text-muted">
                     {service.description}
                   </span>
-                  <span className="mt-auto pt-3 text-xs text-muted">
-                    {service.durationMinutes} minutes
-                  </span>
-                  <span className="pt-1 text-lg font-medium leading-none text-accent">
+                  <span className="mt-auto px-2 pb-3 pt-2 text-lg font-semibold leading-none tracking-tight text-ink">
                     {formatMoney(service.priceCents, service.currency)}
                   </span>
                 </Link>

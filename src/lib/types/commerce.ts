@@ -27,6 +27,7 @@ export type SalonService = {
   priceCents: number;
   currency: string;
   description: string;
+  image: string;
 };
 
 export type Testimonial = {
