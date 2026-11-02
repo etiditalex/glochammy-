@@ -4,7 +4,6 @@ import { AddToCartPanel } from "@/components/product/add-to-cart-panel";
 import { ProductGallery } from "@/components/product/product-gallery";
 import {
   getProductBySlug,
-  getProductSlugs,
   getRelatedProducts,
 } from "@/lib/products/catalog";
 import { getProductReviewStats, getProductReviewsList, isUuidProductId } from "@/lib/products/reviews";
@@ -13,22 +12,32 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+export const dynamicParams = true;
 
-type Props = { params: { slug: string } };
+type PageParams = { slug: string };
+type Props = { params: PageParams | Promise<PageParams> };
 
-export async function generateStaticParams() {
-  const slugs = await getProductSlugs();
-  return slugs.map((slug) => ({ slug }));
+async function readSlug(params: Props["params"]): Promise<string> {
+  const resolved = await params;
+  const value = Array.isArray(resolved?.slug) ? resolved.slug[0] : resolved?.slug;
+  if (!value) return "";
+  try {
+    return decodeURIComponent(value).trim();
+  } catch {
+    return value.trim();
+  }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = await getProductBySlug(params.slug);
+  const product = await getProductBySlug(await readSlug(params));
   if (!product) return { title: "Product" };
+  const longText = product.longDescription ?? "";
+  const shortText = product.description ?? "";
   const desc =
-    product.longDescription.trim() && product.longDescription !== product.description
-      ? `${product.description} ${product.longDescription}`.slice(0, 160)
-      : product.description;
+    longText.trim() && longText !== shortText
+      ? `${shortText} ${longText}`.slice(0, 160)
+      : shortText;
   return {
     title: product.name,
     description: desc,
@@ -41,17 +50,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProductPage({ params }: Props) {
-  const product = await getProductBySlug(params.slug);
+  const slug = await readSlug(params);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const longTrim = product.longDescription.trim();
-  const shortTrim = product.description.trim();
+  const longTrim = (product.longDescription ?? "").trim();
+  const shortTrim = (product.description ?? "").trim();
   const hasDistinctLong =
     longTrim.length > 0 && longTrim.toLowerCase() !== shortTrim.toLowerCase();
 
   const reviewsEnabled = isUuidProductId(product.id);
   const [related, initialReviews, initialReviewStats] = await Promise.all([
-    getRelatedProducts(params.slug, 3),
+    getRelatedProducts(slug, 3),
     reviewsEnabled ? getProductReviewsList(product.id) : Promise.resolve([]),
     reviewsEnabled
       ? getProductReviewStats(product.id)

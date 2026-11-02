@@ -30,8 +30,8 @@ function rowToProduct(row: ProductRow): Product {
     id: row.id,
     slug: row.slug,
     name: row.name,
-    description: row.description,
-    longDescription: row.long_description,
+    description: row.description ?? "",
+    longDescription: row.long_description ?? "",
     priceCents: row.price_cents,
     currency: row.currency,
     category: row.category,
@@ -39,6 +39,10 @@ function rowToProduct(row: ProductRow): Product {
     stockQuantity: Math.max(0, Number(row.stock_quantity ?? 0)),
     featured: row.featured ?? false,
   };
+}
+
+function normalizeSlug(slug: string): string {
+  return slug.trim().toLowerCase();
 }
 
 export const getShopProducts = cache(async (): Promise<Product[]> => {
@@ -65,25 +69,33 @@ export const getShopProducts = cache(async (): Promise<Product[]> => {
 });
 
 export const getProductBySlug = cache(async (slug: string): Promise<Product | undefined> => {
-  if (!isSupabaseConfigured()) return staticGetBySlug(slug);
+  const normalized = normalizeSlug(slug);
+  if (!normalized) return undefined;
+
+  const listed = (await getShopProducts()).find(
+    (product) => normalizeSlug(product.slug) === normalized,
+  );
+  if (listed) return listed;
+
+  if (!isSupabaseConfigured()) return staticGetBySlug(normalized);
 
   try {
     const supabase = createPublicSupabaseServerClient();
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .eq("slug", slug)
+      .eq("slug", normalized)
       .maybeSingle();
 
     if (error) {
       console.error("getProductBySlug", error.message);
-      return staticGetBySlug(slug);
+      return staticGetBySlug(normalized);
     }
-    if (!data) return staticGetBySlug(slug);
+    if (!data) return staticGetBySlug(normalized);
     return rowToProduct(data as ProductRow);
   } catch (e) {
     console.error("getProductBySlug", e);
-    return staticGetBySlug(slug);
+    return staticGetBySlug(normalized);
   }
 });
 
