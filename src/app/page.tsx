@@ -1,8 +1,9 @@
 import { Hero } from "@/components/home/hero";
+import { HomeCategories } from "@/components/home/home-categories";
 import { HomeProductRail } from "@/components/home/home-product-rail";
 import { ProductSpotlightBanner } from "@/components/home/product-spotlight-banner";
 import { SalonPreview } from "@/components/home/salon-preview";
-import { BRAND } from "@/lib/constants";
+import { BRAND, FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import { getShopProducts } from "@/lib/products/catalog";
 import { getProductCategories } from "@/lib/products/categories";
 import { salonServices } from "@/lib/data/services";
@@ -44,20 +45,32 @@ export default async function HomePage() {
     (product) => !knownSlugs.has(product.category),
   );
 
+  const categoryTiles = categoryRails.map((category) => ({
+    slug: category.slug,
+    name: category.name,
+    href: `/shop?category=${encodeURIComponent(category.slug)}`,
+    image: category.products[0]?.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL,
+  }));
+
   return (
-    <div className="bg-cream">
-      <Hero categories={categories} />
+    <div className="bg-white">
+      <Hero />
+      <HomeCategories categories={categoryTiles} />
       <HomeProductRail
         id="top-selling-heading"
+        eyebrow="Staff picks"
         title="Top selling items"
         href="/shop"
         products={topSelling}
         priority
       />
+      <Newsletter />
+      <ProductSpotlightBanner />
       {categoryRails.map((category) => (
         <HomeProductRail
           key={category.slug}
           id={`home-${category.slug}`}
+          eyebrow="Collection"
           title={
             category.slug === "hair" ? "Best Deals in Hair & Wigs" : category.name
           }
@@ -68,18 +81,13 @@ export default async function HomePage() {
       {otherProducts.length > 0 ? (
         <HomeProductRail
           id="home-more-products"
+          eyebrow="Shop"
           title="More products"
           href="/shop"
           products={otherProducts}
         />
       ) : null}
       <SalonPreview services={salonServices} />
-      <section className="w-full bg-cream px-2 py-2" aria-label="Featured promotion">
-        <div className="mx-auto max-w-[1248px] md:px-3">
-          <ProductSpotlightBanner />
-        </div>
-      </section>
-      <Newsletter />
     </div>
   );
 }
