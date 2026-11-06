@@ -40,15 +40,17 @@ function readInitialState(): CartState {
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<CartState>({});
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setState(readInitialState());
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!hydrated || typeof window === "undefined") return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+  }, [hydrated, state]);
 
   const lines: CartLine[] = useMemo(
     () =>

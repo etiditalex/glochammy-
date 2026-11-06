@@ -2,6 +2,7 @@
 
 import { useCart } from "@/context/cart-context";
 import { formatMoney } from "@/lib/format";
+import { trackedStock } from "@/lib/products/stock";
 import type { Product } from "@/lib/types/commerce";
 import { ButtonPush } from "@/components/ui/button-push";
 import { Minus, Plus } from "lucide-react";
@@ -14,13 +15,13 @@ type AddToCartPanelProps = {
 export function AddToCartPanel({ product }: AddToCartPanelProps) {
   const { addItem, lines, setQuantity } = useCart();
   const [qty, setQty] = useState(1);
-  const available = Math.max(0, product.stockQuantity ?? 0);
-  const isOutOfStock = available <= 0;
+  const available = trackedStock(product.stockQuantity);
+  const isOutOfStock = available === 0;
 
   const inCart = useMemo(() => {
     return lines.find((l) => l.productId === product.id)?.quantity ?? 0;
   }, [lines, product.id]);
-  const maxAddable = Math.max(0, available - inCart);
+  const maxAddable = available === null ? 12 : Math.max(0, available - inCart);
 
   function increment() {
     setQty((q) => Math.min(Math.min(12, maxAddable || 1), q + 1));
@@ -68,7 +69,11 @@ export function AddToCartPanel({ product }: AddToCartPanelProps) {
         </ButtonPush>
       </div>
       <p className="mt-3 text-2xs text-muted">
-        {isOutOfStock ? "Currently out of stock." : `${available} item(s) available.`}
+        {isOutOfStock
+          ? "Currently out of stock."
+          : available === null
+            ? "In stock."
+            : `${available} item(s) available.`}
       </p>
       {inCart > 0 ? (
         <p className="mt-4 text-sm text-muted" role="status">

@@ -3,6 +3,7 @@
 import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import { useCart } from "@/context/cart-context";
 import { formatMoney } from "@/lib/format";
+import { trackedStock } from "@/lib/products/stock";
 import type { Product } from "@/lib/types/commerce";
 import { ButtonPush } from "@/components/ui/button-push";
 import Image from "next/image";
@@ -26,8 +27,8 @@ export function ProductCard({
   const { addItem } = useCart();
   const cover = product.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL;
   const frame = flush ? "" : "border border-line";
-  const availableStock = Math.max(0, product.stockQuantity ?? 0);
-  const isOutOfStock = availableStock <= 0;
+  const availableStock = trackedStock(product.stockQuantity);
+  const isOutOfStock = availableStock === 0;
   const sizes =
     imageSizes ??
     (flush
@@ -70,7 +71,11 @@ export function ProductCard({
             {formatMoney(product.priceCents, product.currency)}
           </p>
           <p className="text-2xs text-muted">
-            {isOutOfStock ? "Out of stock" : `${availableStock} in stock`}
+            {isOutOfStock
+              ? "Out of stock"
+              : availableStock === null
+                ? "In stock"
+                : `${availableStock} in stock`}
           </p>
         </div>
         <ButtonPush

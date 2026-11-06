@@ -46,6 +46,21 @@ const BANNER_SLIDES = [
     alt: "Glochammy Beauty premium care banner",
     href: "/booking",
   },
+  {
+    src: "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?auto=format&w=1600&q=80",
+    alt: "Glochammy Beauty skincare products",
+    href: "/shop?category=skincare",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&w=1600&q=80",
+    alt: "Glochammy Beauty perfumes",
+    href: "/shop?category=fragrance",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&w=1600&q=80",
+    alt: "Glochammy Beauty watches",
+    href: "/shop",
+  },
 ] as const;
 
 type HeroProps = {

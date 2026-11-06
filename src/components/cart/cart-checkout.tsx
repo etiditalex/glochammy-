@@ -7,6 +7,7 @@ import {
 } from "@/app/actions/checkout-mpesa";
 import { CopyOrderIdButton } from "@/components/cart/copy-order-id-button";
 import { useCart } from "@/context/cart-context";
+import { stockIssue } from "@/lib/products/stock";
 import { isBrowserSupabaseConfigured } from "@/lib/supabase/env";
 import { ButtonPush } from "@/components/ui/button-push";
 import type { Product } from "@/lib/types/commerce";
@@ -211,12 +212,7 @@ export function CartCheckout({
       .map((line) => {
         const product = catalog.find((p) => p.id === line.productId);
         if (!product) return null;
-        const available = Math.max(0, product.stockQuantity ?? 0);
-        if (available <= 0) return `${product.name} is out of stock`;
-        if (line.quantity > available) {
-          return `${product.name} has only ${available} left`;
-        }
-        return null;
+        return stockIssue(product.stockQuantity, line.quantity, product.name);
       })
       .filter((v): v is string => Boolean(v));
     if (stockIssues.length) {
@@ -282,12 +278,7 @@ export function CartCheckout({
       .map((line) => {
         const product = catalog.find((p) => p.id === line.productId);
         if (!product) return null;
-        const available = Math.max(0, product.stockQuantity ?? 0);
-        if (available <= 0) return `${product.name} is out of stock`;
-        if (line.quantity > available) {
-          return `${product.name} has only ${available} left`;
-        }
-        return null;
+        return stockIssue(product.stockQuantity, line.quantity, product.name);
       })
       .filter((v): v is string => Boolean(v));
     if (stockIssues.length) {

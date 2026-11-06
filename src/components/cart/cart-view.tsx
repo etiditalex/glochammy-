@@ -5,6 +5,7 @@ import { OrderThankYou } from "@/components/cart/order-thank-you";
 import { useCart } from "@/context/cart-context";
 import { products as staticCatalog } from "@/lib/data/products";
 import { formatMoney } from "@/lib/format";
+import { trackedStock } from "@/lib/products/stock";
 import type { Product } from "@/lib/types/commerce";
 import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
 import { ButtonLink } from "@/components/ui/button-link";
@@ -98,7 +99,7 @@ export function CartView({
     <div className="grid min-w-0 gap-10 lg:grid-cols-[1fr_320px] lg:items-start">
       <ul className="space-y-6">
         {rows.map(({ line, product }) => {
-          const availableStock = Math.max(0, product.stockQuantity ?? 0);
+          const availableStock = trackedStock(product.stockQuantity);
           return (
           <li
             key={product.id}
@@ -129,9 +130,11 @@ export function CartView({
                     {formatMoney(product.priceCents, product.currency)} each
                   </p>
                   <p className="mt-1 text-2xs text-muted">
-                    {availableStock > 0
-                      ? `${availableStock} in stock`
-                      : "Out of stock"}
+                    {availableStock === null
+                      ? "In stock"
+                      : availableStock > 0
+                        ? `${availableStock} in stock`
+                        : "Out of stock"}
                   </p>
                 </div>
                 <p className="text-sm font-medium text-ink sm:text-right">
@@ -158,7 +161,7 @@ export function CartView({
                 <button
                   type="button"
                   onClick={() => setQuantity(product.id, line.quantity + 1)}
-                  disabled={line.quantity >= availableStock}
+                  disabled={availableStock !== null && line.quantity >= availableStock}
                   className="flex min-h-[44px] min-w-[44px] items-center justify-center text-ink transition-colors hover:bg-subtle"
                   aria-label="Increase quantity"
                 >
@@ -173,11 +176,11 @@ export function CartView({
                   <Trash2 className="h-4 w-4" strokeWidth={1.25} />
                 </button>
               </div>
-              {availableStock <= 0 ? (
+              {availableStock === 0 ? (
                 <p className="mt-2 text-2xs text-red-700">
                   This item is now out of stock. Remove it before checkout.
                 </p>
-              ) : line.quantity > availableStock ? (
+              ) : availableStock !== null && line.quantity > availableStock ? (
                 <p className="mt-2 text-2xs text-red-700">
                   Available quantity changed to {availableStock}. Reduce quantity to continue.
                 </p>

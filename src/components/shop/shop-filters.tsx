@@ -1,14 +1,15 @@
 "use client";
 
-import { FALLBACK_PRODUCT_IMAGE_URL } from "@/lib/constants";
-import type { Product } from "@/lib/types/commerce";
+import { ShopProductCard } from "@/components/shop/shop-product-card";
 import { formatMoney } from "@/lib/format";
-import Image from "next/image";
-import Link from "next/link";
+import type { Product } from "@/lib/types/commerce";
+import { ChevronDown, Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useEffect, useMemo, useState } from "react";
 
 export type ShopCategoryOption = { slug: string; name: string };
+
+type ShopSort = "featured" | "price_asc" | "price_desc" | "name";
 
 type ShopFiltersProps = {
   products: Product[];
@@ -16,6 +17,11 @@ type ShopFiltersProps = {
   initialCategory?: string | "all";
   initialFeaturedOnly?: boolean;
 };
+
+const PAGE_SIZE = 16;
+
+const selectClass =
+  "h-11 cursor-pointer appearance-none bg-transparent py-2 pr-7 text-xs font-medium uppercase tracking-[0.14em] text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 export function ShopFilters({
   products,
@@ -38,6 +44,9 @@ export function ShopFilters({
   const [category, setCategory] = useState<string>(initialCategory);
   const [featuredOnly, setFeaturedOnly] = useState(initialFeaturedOnly);
   const [maxPrice, setMaxPrice] = useState<number | "all">("all");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<ShopSort>("featured");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     setCategory(initialCategory);
@@ -46,6 +55,10 @@ export function ShopFilters({
   useEffect(() => {
     setFeaturedOnly(initialFeaturedOnly);
   }, [initialFeaturedOnly]);
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [category, featuredOnly, maxPrice, query, sort]);
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -64,147 +77,269 @@ export function ShopFilters({
     });
   }, [category, featuredOnly, pathname, router, searchParams]);
 
+  const categoryNameBySlug = useMemo(() => {
+    return new Map(categoryOptions.map((c) => [c.slug, c.name]));
+  }, [categoryOptions]);
+
   const priceCeiling = useMemo(() => {
     return Math.max(...products.map((p) => p.priceCents), 0);
   }, [products]);
 
+  const currency = products[0]?.currency ?? "KES";
+
   const filtered = useMemo(() => {
-    return products.filter((p) => {
-      if (featuredOnly && !p.featured) return false;
-      if (category !== "all" && p.category !== category) return false;
-      if (maxPrice !== "all" && p.priceCents > maxPrice) return false;
-      return true;
+    const q = query.trim().toLowerCase();
+    const ranked = products.map((product, index) => ({ product, index }));
+    const matched = ranked.filter(({ product }) => {
+      if (featuredOnly && !product.featured) return false;
+      if (category !== "all" && product.category !== category) return false;
+      if (maxPrice !== "all" && product.priceCents > maxPrice) return false;
+      if (!q) return true;
+      const categoryName = categoryNameBySlug.get(product.category) ?? product.category;
+      const haystack = `${product.name} ${product.description} ${product.longDescription} ${categoryName}`.toLowerCase();
+      return haystack.includes(q);
     });
-  }, [products, category, maxPrice, featuredOnly]);
+
+    matched.sort((a, b) => {
+      if (sort === "price_asc") {
+        return a.product.priceCents - b.product.priceCents || a.index - b.index;
+      }
+      if (sort === "price_desc") {
+        return b.product.priceCents - a.product.priceCents || a.index - b.index;
+      }
+      if (sort === "name") {
+        return a.product.name.localeCompare(b.product.name, "en") || a.index - b.index;
+      }
+      const featuredDelta =
+        Number(Boolean(b.product.featured)) - Number(Boolean(a.product.featured));
+      return featuredDelta || a.index - b.index;
+    });
+
+    return matched.map(({ product }) => product);
+  }, [products, category, maxPrice, featuredOnly, query, sort, categoryNameBySlug]);
+
+  const visible = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
+  const activeCategory = categoryOptions.find((c) => c.slug === category);
+  const title =
+    category !== "all" && activeCategory
+      ? activeCategory.name
+      : featuredOnly
+        ? "Staff picks"
+        : "All products";
+  const subtitle =
+    featuredOnly && category !== "all" && activeCategory
+      ? `Staff picks in ${activeCategory.name.toLowerCase()}.`
+      : "Skincare, hair, body, and fragrance—an intentional edit.";
+  const countLabel = `${filtered.length} ${filtered.length === 1 ? "product" : "products"}`;
+  const filtersActive =
+    category !== "all" ||
+    featuredOnly ||
+    maxPrice !== "all" ||
+    query.trim().length > 0 ||
+    sort !== "featured";
+
+  function clearFilters() {
+    setCategory("all");
+    setFeaturedOnly(false);
+    setMaxPrice("all");
+    setQuery("");
+    setSort("featured");
+  }
 
   return (
-    <div className="min-w-0 w-full">
-      <div className="mx-auto min-w-0 max-w-content px-4 sm:px-8">
-        <div className="flex flex-col gap-6 border-b border-line py-8 lg:flex-row lg:items-end lg:justify-between">
-          <fieldset className="min-w-0">
-            <legend className="text-2xs font-medium uppercase tracking-nav text-muted">
-              Category
-            </legend>
-            <div
-              className="mt-3 flex flex-wrap gap-2"
-              role="group"
-              aria-label="Filter by category"
-            >
-              {filterButtons.map((c) => {
-                const active = category === c.id;
-                return (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setCategory(c.id)}
-                    className={`min-h-[44px] rounded-none border px-3 py-2 text-2xs uppercase tracking-nav transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:min-h-[40px] sm:text-xs ${
-                      active
-                        ? "border-ink bg-ink text-white"
-                        : "border-line bg-white text-ink hover:bg-subtle"
-                    }`}
-                    aria-pressed={active}
-                  >
-                    {c.label}
-                  </button>
-                );
-              })}
-            </div>
-          </fieldset>
+    <div className="min-w-0 w-full bg-white">
+      <section className="bg-[#f3f0ea]">
+        <div className="mx-auto max-w-[1280px] px-4 py-8 sm:px-8 sm:py-11 lg:py-14">
+          <p className="text-2xs font-medium uppercase tracking-nav text-muted">Shop</p>
+          <h1 className="mt-2 font-sans text-[2rem] font-semibold uppercase leading-[0.95] tracking-[-0.03em] text-ink sm:text-5xl lg:text-[3.35rem]">
+            {title}
+          </h1>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink/70 sm:text-base">
+            {subtitle}
+          </p>
+        </div>
+      </section>
 
-          <div className="flex flex-wrap items-end gap-4 lg:max-w-xs lg:flex-col lg:items-stretch lg:text-right">
-            <fieldset>
-              <legend className="text-2xs font-medium uppercase tracking-nav text-muted lg:text-right">
-                Shelf edit
-              </legend>
+      <nav aria-label="Shop categories" className="relative border-b border-line bg-white">
+        <div className="mx-auto flex max-w-[1280px] items-stretch gap-1 overflow-x-auto px-3 sm:px-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {filterButtons.map((c) => {
+            const active = category === c.id;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setCategory(c.id)}
+                className={`shrink-0 border-b-2 px-3 py-3.5 text-xs font-medium uppercase tracking-nav transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ink ${
+                  active
+                    ? "border-ink text-ink"
+                    : "border-transparent text-muted hover:text-ink"
+                }`}
+                aria-pressed={active}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+          <span className="mx-2 hidden h-4 w-px shrink-0 self-center bg-line sm:block" aria-hidden />
+          <button
+            type="button"
+            onClick={() => setFeaturedOnly((value) => !value)}
+            aria-pressed={featuredOnly}
+            className={`shrink-0 border-b-2 px-3 py-3.5 text-xs font-medium uppercase tracking-nav transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ink ${
+              featuredOnly
+                ? "border-accent text-accent"
+                : "border-transparent text-accent/80 hover:text-accent"
+            }`}
+          >
+            Staff picks
+          </button>
+        </div>
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent sm:hidden"
+          aria-hidden
+        />
+      </nav>
+
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
+        <div className="flex flex-col gap-3 border-b border-line py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative min-w-0 w-full sm:max-w-sm">
+            <label htmlFor="shop-search" className="sr-only">
+              Search products
+            </label>
+            <Search
+              className="pointer-events-none absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+              strokeWidth={1.5}
+              aria-hidden
+            />
+            <input
+              id="shop-search"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search products"
+              autoComplete="off"
+              className="h-11 w-full scroll-mt-40 border-0 border-b border-line bg-transparent pl-7 pr-8 text-sm text-ink placeholder:text-muted/80 focus:border-ink focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            />
+            {query ? (
               <button
                 type="button"
-                onClick={() => setFeaturedOnly((v) => !v)}
-                aria-pressed={featuredOnly}
-                className={`mt-3 min-h-[44px] w-full rounded-none border px-3 py-2 text-2xs uppercase tracking-nav transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:min-h-[40px] sm:text-xs ${
-                  featuredOnly
-                    ? "border-ink bg-ink text-white"
-                    : "border-line bg-white text-ink hover:bg-subtle"
-                }`}
+                onClick={() => setQuery("")}
+                className="absolute right-0 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-muted hover:text-ink"
+                aria-label="Clear search"
               >
-                Staff picks only
+                <X className="h-4 w-4" strokeWidth={1.5} />
               </button>
-            </fieldset>
+            ) : null}
+          </div>
 
-            <div className="min-w-0 flex-1 lg:w-full lg:text-right">
-              <label
-                htmlFor="price-range"
-                className="text-2xs font-medium uppercase tracking-nav text-muted"
-              >
-                Max price
+          <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-2 sm:justify-end">
+            <p className="text-sm text-ink/80" aria-live="polite">
+              {countLabel}
+            </p>
+            <div className="relative">
+              <label htmlFor="price-range" className="sr-only">
+                Maximum price
               </label>
-              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center lg:flex-col lg:items-stretch">
-                <select
-                  id="price-range"
-                  value={maxPrice === "all" ? "all" : String(maxPrice)}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    setMaxPrice(v === "all" ? "all" : Number(v));
-                  }}
-                  className="min-h-[48px] w-full max-w-full border border-line bg-white px-3 py-2 text-base text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:min-h-[44px]"
-                >
-                  <option value="all">Any</option>
-                  {[0.25, 0.5, 0.75, 1].map((fraction) => {
-                    const cents = Math.ceil(priceCeiling * fraction);
-                    const label =
-                      fraction === 1
-                        ? `Up to ${formatMoney(priceCeiling, products[0]?.currency ?? "KES")}`
-                        : `Up to ${formatMoney(cents, products[0]?.currency ?? "KES")}`;
-                    return (
-                      <option key={fraction} value={String(cents)}>
-                        {label}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
+              <select
+                id="price-range"
+                value={maxPrice === "all" ? "all" : String(maxPrice)}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setMaxPrice(value === "all" ? "all" : Number(value));
+                }}
+                className={selectClass}
+              >
+                <option value="all">Any price</option>
+                {[0.25, 0.5, 0.75, 1].map((fraction) => {
+                  const cents = Math.ceil(priceCeiling * fraction);
+                  const label =
+                    fraction === 1
+                      ? `Up to ${formatMoney(priceCeiling, currency)}`
+                      : `Up to ${formatMoney(cents, currency)}`;
+                  return (
+                    <option key={fraction} value={String(cents)}>
+                      {label}
+                    </option>
+                  );
+                })}
+              </select>
+              <ChevronDown
+                className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-ink"
+                strokeWidth={1.5}
+                aria-hidden
+              />
             </div>
+            <div className="relative">
+              <label htmlFor="shop-sort" className="sr-only">
+                Sort products
+              </label>
+              <select
+                id="shop-sort"
+                value={sort}
+                onChange={(event) => setSort(event.target.value as ShopSort)}
+                className={selectClass}
+              >
+                <option value="featured">Sort: Featured</option>
+                <option value="price_asc">Price: Low to high</option>
+                <option value="price_desc">Price: High to low</option>
+                <option value="name">Name: A to Z</option>
+              </select>
+              <ChevronDown
+                className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2 text-ink"
+                strokeWidth={1.5}
+                aria-hidden
+              />
+            </div>
+            {filtersActive ? (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-xs font-medium uppercase tracking-nav text-muted underline decoration-line underline-offset-4 hover:text-ink"
+              >
+                Clear
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
 
       {filtered.length === 0 ? (
-        <p
-          className="px-4 py-16 text-center text-sm text-muted sm:px-8"
-          role="status"
-        >
-          No products match these filters. Try widening your selection.
-        </p>
+        <div className="mx-auto max-w-[1280px] px-4 py-24 text-center sm:px-8" role="status">
+          <p className="font-display text-3xl text-ink sm:text-4xl">Nothing on this shelf</p>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted">
+            No products match these filters. Clear them to see the full edit.
+          </p>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="mt-8 inline-flex min-h-11 items-center justify-center border border-ink px-6 text-xs font-medium uppercase tracking-nav text-ink transition hover:bg-ink hover:text-white"
+          >
+            Clear filters
+          </button>
+        </div>
       ) : (
-        <div className="w-full bg-cream px-2 py-3 sm:px-4 lg:px-6 xl:px-8">
-          <div className="mx-auto grid max-w-[1248px] grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {filtered.map((product) => {
-              const cover = product.images[0] ?? FALLBACK_PRODUCT_IMAGE_URL;
-              return (
-                <Link
-                  key={product.id}
-                  href={`/shop/${product.slug}`}
-                  className="flex h-full flex-col overflow-hidden rounded-xl border border-line bg-white"
-                >
-                  <span className="relative block aspect-square w-full bg-white">
-                    <Image
-                      src={cover}
-                      alt=""
-                      fill
-                      sizes="(min-width: 1280px) 220px, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-                      quality={60}
-                      className="object-contain"
-                    />
-                  </span>
-                  <span className="line-clamp-2 px-2 pt-2 text-sm leading-[1.4] text-muted">
-                    {product.name}
-                  </span>
-                  <span className="mt-auto px-2 pb-3 pt-1 text-lg font-medium leading-none text-accent">
-                    {formatMoney(product.priceCents, product.currency)}
-                  </span>
-                </Link>
-              );
-            })}
+        <div className="mx-auto max-w-[1280px] px-4 pb-20 pt-6 sm:px-8 sm:pt-8">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-12">
+            {visible.map((product, index) => (
+              <ShopProductCard
+                key={product.id}
+                product={product}
+                priority={index < 4}
+              />
+            ))}
           </div>
+          {hasMore ? (
+            <div className="mt-14 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+                className="inline-flex min-h-12 min-w-[12.5rem] items-center justify-center border border-ink px-8 text-xs font-medium uppercase tracking-nav text-ink transition hover:bg-ink hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              >
+                Load more
+              </button>
+            </div>
+          ) : null}
         </div>
       )}
     </div>

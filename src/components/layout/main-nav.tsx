@@ -175,7 +175,15 @@ export function MainNav() {
 
         <div className="ml-auto flex shrink-0 items-center gap-0.5 min-[380px]:gap-1 sm:gap-4 md:gap-5">
           <Link
-            href="/shop"
+            href="/shop#shop-search"
+            onClick={(event) => {
+              if (pathname !== "/shop") return;
+              const field = document.getElementById("shop-search");
+              if (!(field instanceof HTMLInputElement)) return;
+              event.preventDefault();
+              field.scrollIntoView({ behavior: "smooth", block: "center" });
+              field.focus();
+            }}
             className="hidden min-h-[44px] min-w-[44px] items-center justify-center gap-2 text-sm text-ink transition-opacity hover:opacity-60 md:inline-flex md:min-h-0 md:min-w-0 md:px-1"
           >
             <Search className="h-4 w-4" strokeWidth={1.25} aria-hidden />
